@@ -10,7 +10,8 @@ Proxmox VM에 FreePBX Distro(또는 Debian + FreePBX)를 올리고 운영하는 
 |------|-----------|
 | FreePBX VM | `<FREEPBX_IP>` |
 | Home Assistant | `<HA_IP>` |
-| Grandstream ATA | DHCP/고정 (내선 예: `1001`) |
+| Grandstream ATA | DHCP/고정 (내선 예: `<TARGET_EXT>`) |
+| ha-sip (HA) | SIP 내선 예: `<HA_SIP_EXT>` |
 
 ## 권장 사양 (VM)
 
@@ -48,22 +49,21 @@ NAT 뒤에 두는 경우 **외부에서 들어오는 SIP/RTP**는 Proxmox 호스
 | 주제 | 문서 |
 |------|------|
 | Grandstream HT801/HT802 (SIP 내선) | [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md) |
-| Home Assistant (AMI, 전화·TTS) | [ha-asterisk.md](ha-asterisk.md) |
+| Home Assistant AMI (`asterisk.send_action`) | [ha-asterisk.md](ha-asterisk.md) |
+| Home Assistant ha-sip (SIP + Edge TTS) | [ha-sip.md](ha-sip.md) |
 
 ## 구성 요약
 
 ```
-[HA]  asterisk.send_action / AMI :5038
-         ↓
-[FreePBX]  PJSIP 내선, 다이얼플랜, Playback
-         ↓
-[Grandstream]  아날로그 전화
+[HA]  AMI :5038 ──────────────┐
+[HA]  ha-sip :5060 ───────────┼──► [FreePBX] ──SIP──► [Grandstream]
+                               │
 ```
 
 1. FreePBX에 PJSIP Extension 생성  
-2. Grandstream을 내선으로 등록 → [grandstream 가이드](grandstream-ht801-ht802.md)  
-3. AMI `bindaddr` + Manager User → [HA 가이드](ha-asterisk.md)  
-4. HA에서 `Originate`로 내선 호출·`Playback` 안내  
+2. Grandstream 등록 → [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md)  
+3. (선택) AMI + Manager User → [ha-asterisk.md](ha-asterisk.md)  
+4. (선택) ha-sip + Edge TTS → [ha-sip.md](ha-sip.md)  
 
 ## 비밀값·백업
 

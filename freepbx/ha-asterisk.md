@@ -2,6 +2,8 @@
 
 Grandstream 아날로그 내선은 **FreePBX(SIP)** 에만 등록하고, Home Assistant는 **AMI(5038)** 로 PBX를 제어합니다. HA Asterisk **애드온은 불필요**합니다.
 
+SIP로 HA에 **Edge TTS·웹훅 수신**까지 쓰려면 [ha-sip.md](ha-sip.md) (arnonym **ha-sip** 애드온)을 함께 참고합니다.
+
 ## 환경 (예시)
 
 `<HA_IP>`, `<FREEPBX_IP>`는 각각 Home Assistant·FreePBX의 **LAN 주소**로 바꿉니다 (저장소에는 실제 IP를 넣지 않음).
