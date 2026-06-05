@@ -73,32 +73,66 @@ SQL
 
 echo ">> traccar.xml H2 → MySQL"
 systemctl stop traccar
-python3 <<PY
+export DB_USER DB_PASS DB_HOST CONF
+python3 <<'PY'
 from pathlib import Path
 import re
+import os
+from xml.sax.saxutils import escape
 
-user, pwd, host = "${DB_USER}", "${DB_PASS}", "${DB_HOST}"
+user = os.environ["DB_USER"]
+pwd = os.environ["DB_PASS"]
+host = os.environ["DB_HOST"]
+conf = os.environ["CONF"]
 jdbc = (
     f"jdbc:mysql://{host}:3306/traccar?"
     "zeroDateTimeBehavior=round&serverTimezone=UTC&allowPublicKeyRetrieval=true"
     "&useSSL=false&allowMultiQueries=true&autoReconnect=true"
     "&useUnicode=yes&characterEncoding=UTF-8&sessionVariables=sql_mode=''"
 )
-p = Path("${CONF}")
+
+def set_entry(text, key, new_val, expect_old=None):
+    k = re.escape(key)
+    line = f"<entry key='{key}'>{escape(str(new_val))}</entry>"
+    if expect_old is not None:
+        pat = rf"<entry\s+key=['\"]{k}['\"]\s*>{re.escape(expect_old)}</entry>"
+        new_text, n = re.subn(pat, line, text, count=1)
+        if n:
+            return new_text
+    for pat in (
+        rf"<entry\s+key=['\"]{k}['\"]\s*/>",
+        rf"<entry\s+key=['\"]{k}['\"]\s*>[^<]*</entry>",
+        rf"<entry\s+key=['\"]{k}['\"]\s*>(.*?)</entry>",
+    ):
+        new_text, n = re.subn(pat, line, text, count=1, flags=re.DOTALL)
+        if n:
+            return new_text
+    if re.search(rf"<entry\s+key=['\"]{k}['\"]", text):
+        raise SystemExit(f"traccar.xml: {key} 형식 인식 실패 — grep database {conf}")
+    idx = text.rfind("</properties>")
+    if idx < 0:
+        raise SystemExit("</properties> 없음")
+    return text[:idx] + f"\n    {line}\n" + text[idx:]
+
+p = Path(conf)
 text = p.read_text(encoding="utf-8")
-pairs = [
-    ("database.driver", "org.h2.Driver", "com.mysql.cj.jdbc.Driver"),
-    ("database.url", "jdbc:h2:./data/database", jdbc),
-    ("database.user", "sa", user),
-    ("database.password", "", pwd),
-]
-for key, old_val, new_val in pairs:
-    pat = rf"<entry key=['\"]{re.escape(key)}['\"]>{re.escape(old_val)}</entry>"
-    rep = f"<entry key='{key}'>{new_val}</entry>"
-    new_text, n = re.subn(pat, rep, text, count=1)
-    if n == 0:
-        raise SystemExit(f"traccar.xml에서 찾을 수 없음: {key}={old_val[:40]}… ({p})")
-    text = new_text
+if "org.h2.Driver" not in text:
+    if "jdbc:mysql" in text or "com.mysql" in text:
+        raise SystemExit("이미 MySQL/MariaDB 설정 — 수동 확인")
+    raise SystemExit("H2 database.driver 없음 — grep database " + conf)
+
+text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
+pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
+if not re.search(pat_url, text):
+    raise SystemExit("database.url (jdbc:h2) 없음")
+text = re.sub(
+    pat_url,
+    f"<entry key='database.url'>{escape(jdbc)}</entry>",
+    text,
+    count=1,
+)
+text = set_entry(text, "database.user", user, "sa")
+text = set_entry(text, "database.password", pwd)
 p.write_text(text, encoding="utf-8")
 print(f"traccar.xml 업데이트 완료: {p}")
 PY
@@ -168,31 +202,66 @@ FLUSH PRIVILEGES;
 SQL
 
 echo ">> traccar.xml H2 → MySQL"
-python3 <<PY
+export DB_USER DB_PASS DB_HOST CONF
+python3 <<'PY'
 from pathlib import Path
 import re
-user, pwd, host = "${DB_USER}", "${DB_PASS}", "${DB_HOST}"
+import os
+from xml.sax.saxutils import escape
+
+user = os.environ["DB_USER"]
+pwd = os.environ["DB_PASS"]
+host = os.environ["DB_HOST"]
+conf = os.environ["CONF"]
 jdbc = (
     f"jdbc:mysql://{host}:3306/traccar?"
     "zeroDateTimeBehavior=round&serverTimezone=UTC&allowPublicKeyRetrieval=true"
     "&useSSL=false&allowMultiQueries=true&autoReconnect=true"
     "&useUnicode=yes&characterEncoding=UTF-8&sessionVariables=sql_mode=''"
 )
-p = Path("${CONF}")
+
+def set_entry(text, key, new_val, expect_old=None):
+    k = re.escape(key)
+    line = f"<entry key='{key}'>{escape(str(new_val))}</entry>"
+    if expect_old is not None:
+        pat = rf"<entry\s+key=['\"]{k}['\"]\s*>{re.escape(expect_old)}</entry>"
+        new_text, n = re.subn(pat, line, text, count=1)
+        if n:
+            return new_text
+    for pat in (
+        rf"<entry\s+key=['\"]{k}['\"]\s*/>",
+        rf"<entry\s+key=['\"]{k}['\"]\s*>[^<]*</entry>",
+        rf"<entry\s+key=['\"]{k}['\"]\s*>(.*?)</entry>",
+    ):
+        new_text, n = re.subn(pat, line, text, count=1, flags=re.DOTALL)
+        if n:
+            return new_text
+    if re.search(rf"<entry\s+key=['\"]{k}['\"]", text):
+        raise SystemExit(f"traccar.xml: {key} 형식 인식 실패 — grep database {conf}")
+    idx = text.rfind("</properties>")
+    if idx < 0:
+        raise SystemExit("</properties> 없음")
+    return text[:idx] + f"\n    {line}\n" + text[idx:]
+
+p = Path(conf)
 text = p.read_text(encoding="utf-8")
-pairs = [
-    ("database.driver", "org.h2.Driver", "com.mysql.cj.jdbc.Driver"),
-    ("database.url", "jdbc:h2:./data/database", jdbc),
-    ("database.user", "sa", user),
-    ("database.password", "", pwd),
-]
-for key, old_val, new_val in pairs:
-    pat = rf"<entry key=['\"]{re.escape(key)}['\"]>{re.escape(old_val)}</entry>"
-    rep = f"<entry key='{key}'>{new_val}</entry>"
-    new_text, n = re.subn(pat, rep, text, count=1)
-    if n == 0:
-        raise SystemExit(f"traccar.xml에서 찾을 수 없음: {key}={old_val[:40]}… ({p})")
-    text = new_text
+if "org.h2.Driver" not in text:
+    if "jdbc:mysql" in text or "com.mysql" in text:
+        raise SystemExit("이미 MySQL/MariaDB 설정 — 수동 확인")
+    raise SystemExit("H2 database.driver 없음 — grep database " + conf)
+
+text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
+pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
+if not re.search(pat_url, text):
+    raise SystemExit("database.url (jdbc:h2) 없음")
+text = re.sub(
+    pat_url,
+    f"<entry key='database.url'>{escape(jdbc)}</entry>",
+    text,
+    count=1,
+)
+text = set_entry(text, "database.user", user, "sa")
+text = set_entry(text, "database.password", pwd)
 p.write_text(text, encoding="utf-8")
 print(f"traccar.xml 업데이트 완료: {p}")
 PY
@@ -345,6 +414,8 @@ echo "OK — /etc/cron.daily/traccar-clear-logs (최근 ${LOG_DAYS}일 보관)"
 | 증상 | 조치 |
 |------|------|
 | `설정 없음: /opt/traccar/conf/traccar.xml` | LXC가 아니거나 경로 다름 — `ls /opt/traccar/conf/` |
+| `database.password` / 항목 없음 | `grep database /opt/traccar/conf/traccar.xml` — 항목 누락·자기닫힘 태그는 최신 스크립트가 처리 |
+| `이미 MySQL/MariaDB` | [§1](#1-mariadb-신규-전환) 일부만 적용됐을 수 있음 — [§6](#6-수동-설정) |
 | `traccar.xml에서 찾을 수 없음` | 이미 MySQL 전환됐거나 수동 편집됨 — [§6](#6-수동-설정) |
 | DB 연결 오류 | `DB_PASS`·`DB_HOST` 확인, `mysql -e "SHOW DATABASES;"` |
 | §2 H2 덤프 실패 | Traccar **중지** 확인, `/opt/traccar/lib/h2-*.jar` 사용 |

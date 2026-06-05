@@ -73,32 +73,66 @@ SQL
 
 echo ">> traccar.xml H2 → MySQL"
 systemctl stop traccar
-python3 <<PY
+export DB_USER DB_PASS DB_HOST CONF
+python3 <<'PY'
 from pathlib import Path
 import re
+import os
+from xml.sax.saxutils import escape
 
-user, pwd, host = "${DB_USER}", "${DB_PASS}", "${DB_HOST}"
+user = os.environ["DB_USER"]
+pwd = os.environ["DB_PASS"]
+host = os.environ["DB_HOST"]
+conf = os.environ["CONF"]
 jdbc = (
     f"jdbc:mysql://{host}:3306/traccar?"
     "zeroDateTimeBehavior=round&serverTimezone=UTC&allowPublicKeyRetrieval=true"
     "&useSSL=false&allowMultiQueries=true&autoReconnect=true"
     "&useUnicode=yes&characterEncoding=UTF-8&sessionVariables=sql_mode=''"
 )
-p = Path("${CONF}")
+
+def set_entry(text, key, new_val, expect_old=None):
+    k = re.escape(key)
+    line = f"<entry key='{key}'>{escape(str(new_val))}</entry>"
+    if expect_old is not None:
+        pat = rf"<entry\s+key=['\"]{k}['\"]\s*>{re.escape(expect_old)}</entry>"
+        new_text, n = re.subn(pat, line, text, count=1)
+        if n:
+            return new_text
+    for pat in (
+        rf"<entry\s+key=['\"]{k}['\"]\s*/>",
+        rf"<entry\s+key=['\"]{k}['\"]\s*>[^<]*</entry>",
+        rf"<entry\s+key=['\"]{k}['\"]\s*>(.*?)</entry>",
+    ):
+        new_text, n = re.subn(pat, line, text, count=1, flags=re.DOTALL)
+        if n:
+            return new_text
+    if re.search(rf"<entry\s+key=['\"]{k}['\"]", text):
+        raise SystemExit(f"traccar.xml: cannot parse {key} — grep database {conf}")
+    idx = text.rfind("</properties>")
+    if idx < 0:
+        raise SystemExit("missing </properties>")
+    return text[:idx] + f"\n    {line}\n" + text[idx:]
+
+p = Path(conf)
 text = p.read_text(encoding="utf-8")
-pairs = [
-    ("database.driver", "org.h2.Driver", "com.mysql.cj.jdbc.Driver"),
-    ("database.url", "jdbc:h2:./data/database", jdbc),
-    ("database.user", "sa", user),
-    ("database.password", "", pwd),
-]
-for key, old_val, new_val in pairs:
-    pat = rf"<entry key=['\"]{re.escape(key)}['\"]>{re.escape(old_val)}</entry>"
-    rep = f"<entry key='{key}'>{new_val}</entry>"
-    new_text, n = re.subn(pat, rep, text, count=1)
-    if n == 0:
-        raise SystemExit(f"Not found in traccar.xml: {key}={old_val[:40]}… ({p})")
-    text = new_text
+if "org.h2.Driver" not in text:
+    if "jdbc:mysql" in text or "com.mysql" in text:
+        raise SystemExit("already MySQL/MariaDB — check traccar.xml")
+    raise SystemExit("H2 database.driver missing — grep database " + conf)
+
+text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
+pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
+if not re.search(pat_url, text):
+    raise SystemExit("database.url (jdbc:h2) missing")
+text = re.sub(
+    pat_url,
+    f"<entry key='database.url'>{escape(jdbc)}</entry>",
+    text,
+    count=1,
+)
+text = set_entry(text, "database.user", user, "sa")
+text = set_entry(text, "database.password", pwd)
 p.write_text(text, encoding="utf-8")
 print(f"traccar.xml updated: {p}")
 PY
@@ -168,31 +202,66 @@ FLUSH PRIVILEGES;
 SQL
 
 echo ">> traccar.xml H2 → MySQL"
-python3 <<PY
+export DB_USER DB_PASS DB_HOST CONF
+python3 <<'PY'
 from pathlib import Path
 import re
-user, pwd, host = "${DB_USER}", "${DB_PASS}", "${DB_HOST}"
+import os
+from xml.sax.saxutils import escape
+
+user = os.environ["DB_USER"]
+pwd = os.environ["DB_PASS"]
+host = os.environ["DB_HOST"]
+conf = os.environ["CONF"]
 jdbc = (
     f"jdbc:mysql://{host}:3306/traccar?"
     "zeroDateTimeBehavior=round&serverTimezone=UTC&allowPublicKeyRetrieval=true"
     "&useSSL=false&allowMultiQueries=true&autoReconnect=true"
     "&useUnicode=yes&characterEncoding=UTF-8&sessionVariables=sql_mode=''"
 )
-p = Path("${CONF}")
+
+def set_entry(text, key, new_val, expect_old=None):
+    k = re.escape(key)
+    line = f"<entry key='{key}'>{escape(str(new_val))}</entry>"
+    if expect_old is not None:
+        pat = rf"<entry\s+key=['\"]{k}['\"]\s*>{re.escape(expect_old)}</entry>"
+        new_text, n = re.subn(pat, line, text, count=1)
+        if n:
+            return new_text
+    for pat in (
+        rf"<entry\s+key=['\"]{k}['\"]\s*/>",
+        rf"<entry\s+key=['\"]{k}['\"]\s*>[^<]*</entry>",
+        rf"<entry\s+key=['\"]{k}['\"]\s*>(.*?)</entry>",
+    ):
+        new_text, n = re.subn(pat, line, text, count=1, flags=re.DOTALL)
+        if n:
+            return new_text
+    if re.search(rf"<entry\s+key=['\"]{k}['\"]", text):
+        raise SystemExit(f"traccar.xml: cannot parse {key} — grep database {conf}")
+    idx = text.rfind("</properties>")
+    if idx < 0:
+        raise SystemExit("missing </properties>")
+    return text[:idx] + f"\n    {line}\n" + text[idx:]
+
+p = Path(conf)
 text = p.read_text(encoding="utf-8")
-pairs = [
-    ("database.driver", "org.h2.Driver", "com.mysql.cj.jdbc.Driver"),
-    ("database.url", "jdbc:h2:./data/database", jdbc),
-    ("database.user", "sa", user),
-    ("database.password", "", pwd),
-]
-for key, old_val, new_val in pairs:
-    pat = rf"<entry key=['\"]{re.escape(key)}['\"]>{re.escape(old_val)}</entry>"
-    rep = f"<entry key='{key}'>{new_val}</entry>"
-    new_text, n = re.subn(pat, rep, text, count=1)
-    if n == 0:
-        raise SystemExit(f"Not found in traccar.xml: {key}={old_val[:40]}… ({p})")
-    text = new_text
+if "org.h2.Driver" not in text:
+    if "jdbc:mysql" in text or "com.mysql" in text:
+        raise SystemExit("already MySQL/MariaDB — check traccar.xml")
+    raise SystemExit("H2 database.driver missing — grep database " + conf)
+
+text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
+pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
+if not re.search(pat_url, text):
+    raise SystemExit("database.url (jdbc:h2) missing")
+text = re.sub(
+    pat_url,
+    f"<entry key='database.url'>{escape(jdbc)}</entry>",
+    text,
+    count=1,
+)
+text = set_entry(text, "database.user", user, "sa")
+text = set_entry(text, "database.password", pwd)
 p.write_text(text, encoding="utf-8")
 print(f"traccar.xml updated: {p}")
 PY
@@ -345,6 +414,8 @@ Test: `bash /etc/cron.daily/traccar-clear-logs`
 | Symptom | Action |
 |---------|--------|
 | `Config missing: /opt/traccar/conf/traccar.xml` | Not LXC layout — run `ls /opt/traccar/conf/` |
+| `database.password` missing | `grep database /opt/traccar/conf/traccar.xml` — latest script inserts or replaces any format |
+| `already MySQL/MariaDB` | partial §1 run — see [§6](#6-manual-config) |
 | `Not found in traccar.xml` | Already on MySQL or manually edited — see [§6](#6-manual-config) |
 | DB connection error | check `DB_PASS`, `DB_HOST`, `mysql -e "SHOW DATABASES;"` |
 | §2 H2 dump fails | ensure Traccar is **stopped**; use `/opt/traccar/lib/h2-*.jar` |
