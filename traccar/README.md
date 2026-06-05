@@ -18,6 +18,8 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 설치 후 웹 UI: `http://<TRACCAR_IP>:8082` (기본 포트 **8082**)  
 HA 연동(OsmAnd HTTP): 포트 **5055**
 
+기본 DB는 내장 H2입니다. 운영용 **MariaDB/MySQL 전환**·**H2 데이터 마이그레이션**·**주기적 DB 정리**는 [mariadb.md](mariadb.md)를 참고하세요.
+
 ## Home Assistant 연동
 
 | packages (`/config/packages/`) | 설명 |
@@ -31,11 +33,16 @@ HA 연동(OsmAnd HTTP): 포트 **5055**
 | GPS만 위치 자동화 | [ha-rest-command.md](ha-rest-command.md#42-gps만-obd-없음) |
 | HA packages·secrets 구조 | [homeassistant/config-structure.md](../homeassistant/config-structure.md) |
 
+| 운영 | 문서 |
+|------|------|
+| MariaDB/MySQL 전환 · H2 마이그레이션 · GPS DB 정리 · 서버 로그 정리 | [mariadb.md](mariadb.md) |
+
 ## 폴더 구조
 
 ```
 traccar/
 ├── README.md
+├── mariadb.md               # MariaDB/MySQL · 주기적 DB 정리
 └── ha-rest-command.md       # HA 연동 상세 (자동화·OBD)
 ```
 

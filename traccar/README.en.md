@@ -18,6 +18,8 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 Web UI after install: `http://<TRACCAR_IP>:8082` (default port **8082**)  
 HA integration (OsmAnd HTTP): port **5055**
 
+The default database is embedded H2. For production **MariaDB/MySQL**, **H2 data migration**, and **scheduled DB cleanup**, see [mariadb.en.md](mariadb.en.md).
+
 ## Home Assistant integration
 
 | packages (`/config/packages/`) | Description |
@@ -31,11 +33,16 @@ HA integration (OsmAnd HTTP): port **5055**
 | GPS-only location automation | [ha-rest-command.en.md](ha-rest-command.en.md#42-gps-only-no-obd) |
 | HA packages · secrets layout | [homeassistant/config-structure.en.md](../homeassistant/config-structure.en.md) |
 
+| Operations | Document |
+|------------|----------|
+| MariaDB/MySQL migration · H2 migration · GPS DB cleanup · server log cleanup | [mariadb.en.md](mariadb.en.md) |
+
 ## Folder structure
 
 ```
 traccar/
 ├── README.md
+├── mariadb.md               # MariaDB/MySQL · scheduled DB cleanup
 └── ha-rest-command.md       # HA integration details (automation · OBD)
 ```
 
