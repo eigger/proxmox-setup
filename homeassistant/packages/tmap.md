@@ -1,5 +1,7 @@
 # packages/tmap.yaml
 
+**Language:** [한국어](tmap.md) · [English](tmap.en.md)
+
 [SK open API — TMAP 자동차 경로안내](https://openapi.sk.com/products/detail?linkMenuSeq=46) (`/tmap/routes`)를 HA `rest_command`로 호출합니다.
 
 HA 경로: `/config/packages/tmap.yaml`

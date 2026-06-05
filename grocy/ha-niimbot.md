@@ -1,5 +1,7 @@
 # Home Assistant ↔ grocy (Niimbot 라벨)
 
+**Language:** [한국어](ha-niimbot.md) · [English](ha-niimbot.en.md)
+
 grocy **라벨 프린터 Webhook**으로 인쇄 요청을 보내고, Home Assistant **[hass-niimbot](https://github.com/eigger/hass-niimbot)** 연동으로 Niimbot 라벨기에 QR·상품명을 출력합니다.
 
 LXC 설치: [README.md](README.md) · `homeassistant/packages/` 조합본 없음 (자동화는 이 문서 §2)

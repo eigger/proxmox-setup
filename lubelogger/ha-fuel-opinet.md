@@ -1,5 +1,7 @@
 # Home Assistant ↔ LubeLogger (오피넷 주유)
 
+**Language:** [한국어](ha-fuel-opinet.md) · [English](ha-fuel-opinet.en.md)
+
 OBD·위치 등으로 주유 이벤트를 감지한 뒤, [오피넷(Opinet)](https://www.opinet.co.kr) API로 단가를 조회하고 [LubeLogger](https://lubelogger.com)에 주유 기록을 넣습니다.
 
 LXC 설치·포트: [README.md](README.md) · packages: [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml), [opinet.yaml](../homeassistant/packages/opinet.yaml)

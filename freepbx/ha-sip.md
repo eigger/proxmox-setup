@@ -1,5 +1,7 @@
 # Home Assistant ha-sip ↔ FreePBX
 
+**Language:** [한국어](ha-sip.md) · [English](ha-sip.en.md)
+
 [arnonym/ha-plugins](https://github.com/arnonym/ha-plugins)의 **ha-sip** 애드온으로 HA가 FreePBX에 **SIP 클라이언트**로 등록합니다. TTS는 HA **Edge TTS**(`tts.edge_tts`)를 사용합니다.
 
 LXC 설치·포트: [README.md](README.md) · `homeassistant/packages/` 조합본 없음 (애드온 설정은 [3. ha-sip 애드온 구성](#3-ha-sip-애드온-구성-yaml))

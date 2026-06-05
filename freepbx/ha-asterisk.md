@@ -1,5 +1,7 @@
 # Home Assistant ↔ FreePBX (AMI)
 
+**Language:** [한국어](ha-asterisk.md) · [English](ha-asterisk.en.md)
+
 Grandstream 아날로그 내선은 **FreePBX(SIP)** 에만 등록하고, Home Assistant는 **AMI(5038)** 로 PBX를 제어합니다. HA Asterisk **애드온은 불필요**합니다.
 
 LXC 설치·포트: [README.md](README.md) · `homeassistant/packages/` 조합본 없음 (애드온·자동화는 이 문서에 상세 기술)

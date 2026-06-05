@@ -1,5 +1,7 @@
 # FreePBX
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 [FreePBX](https://www.freepbx.org/) — [Asterisk](https://www.asterisk.org/) 기반 IP-PBX. Proxmox LXC로 셀프호스팅하고 Grandstream ATA·Home Assistant와 연동할 때 참고합니다.
 
 ## 설치

@@ -1,5 +1,7 @@
 # Proxmox — Google Drive 자동 백업
 
+**Language:** [한국어](gdrive-backup.md) · [English](gdrive-backup.en.md)
+
 [rclone](https://rclone.org/)으로 Proxmox 호스트 자원에 무리를 주지 않도록 **업로드 속도·동시 전송 개수를 제한**한 LXC/VM 덤프 백업입니다.
 
 호스트 개요: [README.md](README.md)

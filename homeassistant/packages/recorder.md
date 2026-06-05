@@ -1,5 +1,7 @@
 # packages/recorder.yaml
 
+**Language:** [한국어](recorder.md) · [English](recorder.en.md)
+
 [Recorder](https://www.home-assistant.io/integrations/recorder/) 통합 — 히스토리 **7일 보관** 후 자동 purge, **외부 DB** 연결.
 
 HA 경로: `/config/packages/recorder.yaml`

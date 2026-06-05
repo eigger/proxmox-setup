@@ -1,5 +1,7 @@
 # LubeLogger
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 [LubeLogger](https://lubelogger.com) — 차량 정비·연비 기록 웹 앱. Proxmox VM/LXC 또는 Docker로 셀프호스팅할 때 참고용 설정·번역 자료를 이 폴더에 둡니다.
 
 ## 설치

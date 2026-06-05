@@ -1,5 +1,7 @@
 # Grandstream HT801/HT802
 
+**Language:** [한국어](grandstream-ht801-ht802.md) · [English](grandstream-ht801-ht802.en.md)
+
 [Grandstream](https://www.grandstream.com/) HT801/HT802 ATA를 FreePBX PJSIP 내선으로 등록합니다.
 
 LXC·PBX: [README.md](README.md) · HA AMI: [ha-asterisk.md](ha-asterisk.md)

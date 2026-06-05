@@ -1,5 +1,7 @@
 # Proxmox 호스트
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 Proxmox **호스트** 단위 운영 설정입니다. 개별 VM/LXC는 각 서비스 디렉터리 README를 참고합니다.
 
 ## 가이드

@@ -1,5 +1,7 @@
 # Home Assistant OS
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 [Home Assistant OS](https://www.home-assistant.io/installation/linux) — Proxmox **VM** 위에서 HA OS를 실행합니다. 설정은 **`packages/`** 로 기능별 분리합니다.
 
 ## 설치

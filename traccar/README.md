@@ -1,5 +1,7 @@
 # Traccar
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 [Traccar](https://www.traccar.org/) — GPS 추적 서버. Proxmox VM/LXC 또는 Docker로 셀프호스팅하고 Home Assistant 등에서 위치·텔레메트리를 전송할 때 참고합니다.
 
 ## 설치

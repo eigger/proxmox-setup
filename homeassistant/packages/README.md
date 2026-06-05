@@ -1,5 +1,7 @@
 # packages/
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 Home Assistant `configuration.yaml`의 `!include_dir_named packages` 대상입니다.
 
 HA 인스턴스 경로: `/config/packages/`

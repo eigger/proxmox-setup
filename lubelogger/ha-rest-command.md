@@ -1,5 +1,7 @@
 # Home Assistant ↔ LubeLogger (REST Command)
 
+**Language:** [한국어](ha-rest-command.md) · [English](ha-rest-command.en.md)
+
 Home Assistant **REST Command**로 LubeLogger API에 주행거리·주유 기록을 추가합니다.
 
 LXC 설치·포트: [README.md](README.md) · packages YAML: [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml)

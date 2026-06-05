@@ -1,5 +1,7 @@
 # packages/wol.yaml
 
+**Language:** [한국어](wol.md) · [English](wol.en.md)
+
 NAS 등 장치를 [Wake-on-LAN](https://www.home-assistant.io/integrations/wake_on_lan/) 매직 패킷으로 원격 기동합니다.
 
 HA 경로: `/config/packages/wol.yaml`

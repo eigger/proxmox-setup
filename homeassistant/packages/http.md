@@ -1,5 +1,7 @@
 # packages/http.yaml
 
+**Language:** [한국어](http.md) · [English](http.en.md)
+
 [Cloudflare Tunnel](../../cloudflared/tunnel-setup.md) 등 프록시 뒤에서 Home Assistant가 **클라이언트 IP·스킴(HTTPS)** 를 올바르게 인식하도록 `http` 통합을 설정합니다.
 
 HA 경로: `/config/packages/http.yaml`

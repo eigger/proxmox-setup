@@ -1,5 +1,7 @@
 # Cloudflare Tunnel 구성
 
+**Language:** [한국어](tunnel-setup.md) · [English](tunnel-setup.en.md)
+
 Cloudflare **도메인이 이미 연결된** 계정을 기준으로, Proxmox LXC의 `cloudflared`로 터널을 개통하고 내부 서비스를 서브도메인으로 노출하는 방법입니다.
 
 기존 **Cloudflare DNS + NPM(Nginx Proxy Manager)** 조합 대신, 터널 **Public Hostname**으로 직접 연결하면 NPM 없이도 외부 접근을 구성할 수 있습니다.

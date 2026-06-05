@@ -2,39 +2,39 @@
 
 **Language:** [한국어](ha-rest-command.md) · [English](ha-rest-command.en.md)
 
-Home Assistant **REST Command**로 Traccar **OsmAnd HTTP 프로토콜**(포트 **5055**)에 위치·속도 등을 전송합니다.
+Send location, speed, and other data to Traccar **OsmAnd HTTP protocol** (port **5055**) via Home Assistant **REST Command**.
 
-LXC 설치·포트: [README.md](README.md) · packages YAML: [traccar.yaml](../homeassistant/packages/traccar.yaml)
+LXC install · port: [README.en.md](README.en.md) · packages YAML: [traccar.yaml](../homeassistant/packages/traccar.yaml)
 
-## 환경 (플레이스홀더)
+## Environment (placeholders)
 
-| 항목 | 예시 | 설명 |
+| Item | Example | Description |
 |------|------|------|
-| Traccar | `<TRACCAR_IP>` | Traccar 서버 LAN 주소 |
-| HTTP 포트 | `5055` | OsmAnd 프로토콜 기본 포트 |
-| 디바이스 ID | `<DEVICE_ID>` | Traccar에 등록한 **Unique ID** (`id` 파라미터) |
+| Traccar | `<TRACCAR_IP>` | Traccar server LAN address |
+| HTTP port | `5055` | OsmAnd protocol default port |
+| Device ID | `<DEVICE_ID>` | **Unique ID** registered in Traccar (`id` parameter) |
 
 ```
-스마트폰 GPS (device_tracker) ──► HA 자동화 ──REST GET──► Traccar :5055
-OBD (Colorado Tab5) ──속도·주행거리·activity──┘
+Smartphone GPS (device_tracker) ──► HA automation ──REST GET──► Traccar :5055
+OBD (Colorado Tab5) ──speed · odometer · activity──┘
 ```
 
-Traccar 웹 UI에서 **장치 추가 → Identifier(Unique ID)** 가 REST Command의 `id`와 일치해야 합니다.
+In Traccar web UI, **Add device → Identifier (Unique ID)** must match REST Command `id`.
 
-| 추가 플레이스홀더 | 예시 | 설명 |
+| Additional placeholder | Example | Description |
 |------------------|------|------|
-| 스마트폰 tracker | `<DEVICE_TRACKER>` | HA `device_tracker` entity 접미사 |
-| OBD | `<OBD_DEVICE>` | [espcomponents/colorado](https://github.com/eigger/espcomponents/tree/master/packages/display/colorado) (예: `esp_colorado_tab5`) |
+| Smartphone tracker | `<DEVICE_TRACKER>` | HA `device_tracker` entity suffix |
+| OBD | `<OBD_DEVICE>` | [espcomponents/colorado](https://github.com/eigger/espcomponents/tree/master/packages/display/colorado) (e.g. `esp_colorado_tab5`) |
 
 ## 1. packages — rest_command
 
-HA **packages** 패키지 파일 사용. 배치 후 URL의 `<TRACCAR_IP>`를 실제 값으로 바꿉니다. 정의되지 않은 선택 파라미터는 URL에 포함되지 않습니다.
+Use HA **packages**. After placing the file, replace `<TRACCAR_IP>` in the URL. Optional parameters that are undefined are omitted from the URL.
 
-→ [homeassistant/packages/traccar.yaml](../homeassistant/packages/traccar.yaml) · [traccar.md](../homeassistant/packages/traccar.md)
+→ [homeassistant/packages/traccar.yaml](../homeassistant/packages/traccar.yaml) · [traccar.en.md](../homeassistant/packages/traccar.en.md)
 
-## 2. 호출 예시
+## 2. Call examples
 
-### 최소 (위치 + 시간)
+### Minimal (location + time)
 
 ```yaml
 service: rest_command.send_to_traccar
@@ -45,7 +45,7 @@ data:
   timestamp: "{{ (now().timestamp() * 1000) | int }}"
 ```
 
-### OBD·텔레메트리 포함
+### With OBD telemetry
 
 ```yaml
 service: rest_command.send_to_traccar
@@ -59,62 +59,62 @@ data:
   batt: "{{ states('sensor.my_car_battery') | float(0) }}"
 ```
 
-OBD 센서 예: [espcomponents/colorado](https://github.com/eigger/espcomponents/tree/master/packages/display/colorado)
+OBD sensor example: [espcomponents/colorado](https://github.com/eigger/espcomponents/tree/master/packages/display/colorado)
 
-## 3. REST Command 변수
+## 3. REST Command variables
 
-| 변수 | 필수 | 설명 |
+| Variable | Required | Description |
 |------|------|------|
-| `id` | ✓ | Traccar 장치 Unique ID |
-| `lat` | | 위도 |
-| `lon` | | 경도 |
-| `timestamp` | | ISO 8601 UTC (`YYYY-MM-DDTHH:MM:SSZ`) 또는 epoch ms |
-| `speed` | | 속도 (km/h 또는 kn — Traccar 단위 설정 따름) |
-| `altitude` | | 고도 (m) |
-| `bearing` | | 방향 (°) |
-| `hdop` | | GPS 정확도 (HDOP) |
-| `batt` | | 배터리 (%) |
-| `activity` | | 활동 상태 (`unknown`·`unavailable`은 제외) |
-| `odometer` | | 주행거리 (km) |
+| `id` | ✓ | Traccar device Unique ID |
+| `lat` | | Latitude |
+| `lon` | | Longitude |
+| `timestamp` | | ISO 8601 UTC (`YYYY-MM-DDTHH:MM:SSZ`) or epoch ms |
+| `speed` | | Speed (km/h or kn — follows Traccar unit setting) |
+| `altitude` | | Altitude (m) |
+| `bearing` | | Bearing (°) |
+| `hdop` | | GPS accuracy (HDOP) |
+| `batt` | | Battery (%) |
+| `activity` | | Activity state (`unknown` · `unavailable` excluded) |
+| `odometer` | | Odometer (km) |
 
-`None`, `'None'`, 빈 문자열은 URL에서 자동 제외됩니다.
+`None`, `'None'`, and empty strings are automatically omitted from the URL.
 
-## 4. 위치 업데이트 자동화
+## 4. Location update automation
 
-스마트폰 **Companion App** `device_tracker`가 바뀔 때마다 Traccar로 전송합니다. OBD 연동 여부에 따라 두 가지 패턴을 씁니다.
+Send to Traccar whenever the smartphone **Companion App** `device_tracker` changes. Two patterns depending on OBD integration.
 
-| 패턴 | 용도 |
+| Pattern | Use case |
 |------|------|
-| [4.1 GPS + OBD](#41-gps--obd) | 차량 OBD 속도·주행거리·엔진 부하 보강 |
-| [4.2 GPS만](#42-gps만-obd-없음) | OBD 없는 단말 — GPS 속도만으로 activity 판별 |
+| [4.1 GPS + OBD](#41-gps--obd) | Enrich with vehicle OBD speed · odometer · engine load |
+| [4.2 GPS only](#42-gps-only-no-obd) | No OBD — activity from GPS speed only |
 
-장치·Traccar ID가 다르면 `<DEVICE_TRACKER>`·`<DEVICE_ID>`를 기기마다 바꿉니다.
+Replace `<DEVICE_TRACKER>` · `<DEVICE_ID>` per device if they differ.
 
 ### 4.1 GPS + OBD
 
-**OBD 속도·엔진 부하**로 `activity`·`speed`·`odometer`를 보강합니다.
+Enrich `activity` · `speed` · `odometer` with **OBD speed and engine load**.
 
-### 동작 요약
+### Behavior summary
 
 ```
-device_tracker 변경  ──►  latitude 있음?  ──►  send_to_traccar
+device_tracker change  ──►  latitude present?  ──►  send_to_traccar
                               │
-                              ├─ activity: 엔진 ON → In Vehicle / 속도별 Still·Walking·Running
-                              ├─ speed: OBD 우선, 없으면 GPS×3.6 (km/h)
-                              └─ odometer: 엔진 ON일 때만 OBD 계기판
+                              ├─ activity: engine ON → In Vehicle / speed-based Still·Walking·Running
+                              ├─ speed: OBD first, else GPS×3.6 (km/h)
+                              └─ odometer: OBD dashboard only when engine ON
 ```
 
-### entity (플레이스홀더)
+### Entities (placeholders)
 
-| 용도 | entity_id |
+| Purpose | entity_id |
 |------|-----------|
-| GPS 위치 | `device_tracker.<DEVICE_TRACKER>` |
-| 배터리 | `sensor.<DEVICE_TRACKER>_battery_level` |
-| OBD 속도 | `sensor.<OBD_DEVICE>_car_speed` |
-| OBD 엔진 부하 | `sensor.<OBD_DEVICE>_engine_load` |
-| OBD 주행거리 | `sensor.<OBD_DEVICE>_odometer` |
+| GPS location | `device_tracker.<DEVICE_TRACKER>` |
+| Battery | `sensor.<DEVICE_TRACKER>_battery_level` |
+| OBD speed | `sensor.<OBD_DEVICE>_car_speed` |
+| OBD engine load | `sensor.<OBD_DEVICE>_engine_load` |
+| OBD odometer | `sensor.<OBD_DEVICE>_odometer` |
 
-### 자동화 (YAML)
+### Automation (YAML)
 
 ```yaml
 alias: Traccar 위치 업데이트
@@ -176,40 +176,40 @@ actions:
     response_variable: response
 ```
 
-### activity·speed 판별
+### activity · speed logic
 
-| 조건 | activity | speed |
+| Condition | activity | speed |
 |------|----------|-------|
-| 엔진 부하 > 0 | `In Vehicle` | OBD `car_speed` 우선 |
-| 속도 < 1 km/h | `Still` | OBD 또는 GPS×3.6 |
+| Engine load > 0 | `In Vehicle` | OBD `car_speed` preferred |
+| Speed < 1 km/h | `Still` | OBD or GPS×3.6 |
 | 1–7 km/h | `Walking` | |
 | 7–15 km/h | `Running` | |
 | ≥ 15 km/h | `In Vehicle` | |
 
-- GPS `speed` attr는 **m/s** → ×3.6으로 km/h 변환
-- `odometer`는 **시동 ON**(엔진 부하 > 0)일 때만 전송 — 보행 중 OBD 값 혼입 방지
-- `mode: queued` — 연속 위치 갱신 시 전송 누락 방지
+- GPS `speed` attr is **m/s** → multiply by 3.6 for km/h
+- Send `odometer` only when **engine ON** (engine load > 0) — avoids OBD bleed while walking
+- `mode: queued` — avoids dropped sends on rapid location updates
 
-### 4.2 GPS만 (OBD 없음)
+### 4.2 GPS only (no OBD)
 
-OBD 센서 없이 **Companion GPS**만으로 위치·속도·activity를 전송합니다. Traccar 장치·`device_tracker`가 OBD 연동 단말과 **별도**일 때 사용합니다.
+Send location · speed · activity from **Companion GPS** only, without OBD sensors. Use when Traccar device/`device_tracker` is **separate** from the OBD-linked terminal.
 
-#### 동작 요약
+#### Behavior summary
 
 ```
-device_tracker 변경  ──►  latitude 있음?  ──►  send_to_traccar
+device_tracker change  ──►  latitude present?  ──►  send_to_traccar
                               │
-                              ├─ activity: GPS 속도(km/h)로 Still·Walking·Running·In Vehicle
+                              ├─ activity: GPS speed (km/h) → Still·Walking·Running·In Vehicle
                               └─ speed: GPS m/s × 3.6
 ```
 
-#### entity (플레이스홀더)
+#### Entities (placeholders)
 
-| 용도 | entity_id |
+| Purpose | entity_id |
 |------|-----------|
-| GPS 위치 | `device_tracker.<DEVICE_TRACKER>` |
+| GPS location | `device_tracker.<DEVICE_TRACKER>` |
 
-#### 자동화 (YAML)
+#### Automation (YAML)
 
 ```yaml
 alias: Traccar 위치 업데이트 (GPS만)
@@ -253,35 +253,35 @@ actions:
     response_variable: response
 ```
 
-#### activity·speed 판별 (GPS만)
+#### activity · speed logic (GPS only)
 
-| 속도 (km/h) | activity |
+| Speed (km/h) | activity |
 |-------------|----------|
-| GPS 없음 | `Unknown` |
+| No GPS | `Unknown` |
 | < 2 | `Still` |
 | 2 – 7 | `Walking` |
 | 7 – 20 | `Running` |
 | ≥ 20 | `In Vehicle` |
 
-- [4.1 GPS + OBD](#41-gps--obd)과 **임계값이 다름** — GPS-only는 저속 구간을 넓게 잡음 (Still < 2 km/h)
-- `odometer`·`batt` 미전송 — OBD·배터리 센서 없음
+- **Thresholds differ** from [4.1 GPS + OBD](#41-gps--obd) — GPS-only uses wider low-speed bands (Still < 2 km/h)
+- `odometer` · `batt` not sent — no OBD/battery sensors
 
-## 5. Traccar 측 확인
+## 5. Traccar-side checks
 
-1. **설정 → 서버** — 포트 **5055** OsmAnd 프로토콜 활성화
-2. **장치** — Identifier = HA에서 보내는 `id`
-3. 전송 후 Traccar 지도·로그에서 포인트 수신 확인
+1. **Settings → Server** — enable OsmAnd protocol on port **5055**
+2. **Devices** — Identifier = `id` sent from HA
+3. After sending, confirm points on Traccar map/logs
 
-## 6. 문제 해결
+## 6. Troubleshooting
 
-| 증상 | 조치 |
+| Symptom | Action |
 |------|------|
-| 장치 offline | `id`가 Traccar Unique ID와 일치하는지 확인 |
-| 위치 없음 | `lat`·`lon` 값·템플릿 오류 확인 |
-| 시간 이상 | `timestamp` 형식 확인 (ISO UTC 또는 ms epoch) |
-| 연결 실패 | `<TRACCAR_IP>:5055` 방화벽·Docker 포트 매핑 확인 |
+| Device offline | Confirm `id` matches Traccar Unique ID |
+| No location | Check `lat` · `lon` values and template errors |
+| Wrong time | Check `timestamp` format (ISO UTC or ms epoch) |
+| Connection failure | Check `<TRACCAR_IP>:5055` firewall and Docker port mapping |
 
-## 7. 보안
+## 7. Security
 
-- LAN 내부 또는 VPN 뒤에 두고 5055를 인터넷에 직접 노출하지 않음
-- `id`만으로 위치 주입 가능 — Unique ID는 추측하기 어렵게 설정
+- Keep behind LAN or VPN; do not expose 5055 directly to the internet
+- Location injection possible with `id` alone — use hard-to-guess Unique IDs

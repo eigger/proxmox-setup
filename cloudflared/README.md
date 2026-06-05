@@ -1,5 +1,7 @@
 # Cloudflared
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 [Cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) — Cloudflare Tunnel 클라이언트. LAN 서비스를 포트포워딩 없이 Cloudflare 경유로 노출할 때 사용합니다.
 
 ## 설치

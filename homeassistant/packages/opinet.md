@@ -1,5 +1,7 @@
 # packages/opinet.yaml
 
+**Language:** [한국어](opinet.md) · [English](opinet.en.md)
+
 [오피넷](https://www.opinet.co.kr) **주유소 상세 API**로 나누리 SK 휘발유·경유·고급휘발유 단가를 REST 센서로 가져옵니다. LubeLogger·grocy 주유 스크립트에서 `sensor.nanuri_sk_hwibalyu` 등을 사용합니다.
 
 HA 경로: `/config/packages/opinet.yaml`

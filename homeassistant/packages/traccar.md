@@ -1,5 +1,7 @@
 # packages/traccar.yaml
 
+**Language:** [한국어](traccar.md) · [English](traccar.en.md)
+
 [Traccar](https://www.traccar.org) **OsmAnd HTTP 프로토콜**(포트 **5055**)로 위치·속도·OBD 텔레메트리를 GET 전송합니다.
 
 HA 경로: `/config/packages/traccar.yaml`

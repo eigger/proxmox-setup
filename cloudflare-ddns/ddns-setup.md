@@ -1,5 +1,7 @@
 # Cloudflare DDNS 설정
 
+**Language:** [한국어](ddns-setup.md) · [English](ddns-setup.en.md)
+
 공유기·회선의 **공인 IPv4(·IPv6)** 가 바뀔 때 Cloudflare DNS 레코드를 자동으로 맞춥니다. [Cloudflare Tunnel](../cloudflared/tunnel-setup.md)과 별개로, **DNS만 DDNS로 갱신**할 때 사용합니다.
 
 ```

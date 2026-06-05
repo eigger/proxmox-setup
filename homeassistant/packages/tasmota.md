@@ -1,5 +1,7 @@
 # packages/tasmota.yaml
 
+**Language:** [한국어](tasmota.md) · [English](tasmota.en.md)
+
 [Athom Tasmota IR Remote](https://www.athom.tech/) (AR01)로 수신한 IR 코드를 MQTT 센서로 보고, 선풍기 등 IR 버튼을 HA에서 제어합니다.
 
 HA 경로: `/config/packages/tasmota.yaml`

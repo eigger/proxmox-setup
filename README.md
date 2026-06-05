@@ -1,5 +1,7 @@
 # proxmox-setup
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 Proxmox 위 VM/LXC별 **설치·운영 설정**을 서버(역할)마다 디렉터리로 정리합니다.
 
 | 서버 / 주제 | 경로 | 설명 |

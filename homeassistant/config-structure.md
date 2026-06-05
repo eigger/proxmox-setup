@@ -1,5 +1,7 @@
 # Home Assistant — 설정 구조 (packages)
 
+**Language:** [한국어](config-structure.md) · [English](config-structure.en.md)
+
 HA 인스턴스의 `/config`는 **`packages/` 폴더**로 기능별 YAML을 나눕니다. `configuration.yaml`은 최소한만 두고, REST Command·자동화·스크립트 등은 패키지 파일에 추가합니다.
 
 공식: [Packages](https://www.home-assistant.io/docs/configuration/packages/)
@@ -29,6 +31,13 @@ HA 인스턴스의 `/config`는 **`packages/` 폴더**로 기능별 YAML을 나�
 - **문체:** 기술 설명체. 구어·감탄·튜토리얼 톤 지양
 - **YAML:** packages에 있는 설정은 `ha-*.md`에 중복하지 않고 링크로 대체
 - **내부 링크:** 앵커 URL (`#섹션`) 사용. `§` 표기는 지양
+
+## 다국어 (i18n)
+
+- **한국어:** `README.md`, `ha-*.md` 등 기본 파일명
+- **English:** 같은 경로에 `*.en.md` (예: `README.en.md`, `ha-rest-command.en.md`)
+- **YAML:** `homeassistant/packages/*.yaml`은 **언어 공통 단일 출처** — `.en.md`로 복제하지 않음
+- 각 문서 H1 아래 **Language** 링크로 한·영 전환
 
 ## configuration.yaml (최소)
 

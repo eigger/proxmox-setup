@@ -1,5 +1,7 @@
 # grocy
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 [grocy](https://grocy.info/) — 식료품·가사용품 재고, 쇼핑 목록, 레시피·식단을 관리하는 셀프호스트 웹 앱.
 
 ## 설치

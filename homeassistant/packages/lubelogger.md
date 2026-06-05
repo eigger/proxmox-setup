@@ -1,5 +1,7 @@
 # packages/lubelogger.yaml
 
+**Language:** [한국어](lubelogger.md) · [English](lubelogger.en.md)
+
 [LubeLogger](https://lubelogger.com) API에 **주행거리·주유 기록**을 POST하는 `rest_command`입니다.
 
 HA 경로: `/config/packages/lubelogger.yaml`

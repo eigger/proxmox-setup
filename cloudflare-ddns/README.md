@@ -1,5 +1,7 @@
 # Cloudflare DDNS
 
+**Language:** [한국어](README.md) · [English](README.en.md)
+
 [favonia/cloudflare-ddns](https://github.com/favonia/cloudflare-ddns) — 공인 IP 변경 시 Cloudflare DNS **A/AAAA** 레코드를 자동 갱신하는 경량 DDNS 업데이터.
 
 ## 설치
