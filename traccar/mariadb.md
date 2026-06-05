@@ -117,25 +117,39 @@ def set_entry(text, key, new_val, expect_old=None):
 
 p = Path(conf)
 text = p.read_text(encoding="utf-8")
-if "org.h2.Driver" not in text:
-    if "jdbc:mysql" in text or "com.mysql" in text:
-        raise SystemExit("이미 MySQL/MariaDB 설정 — 수동 확인")
-    raise SystemExit("H2 database.driver 없음 — grep database " + conf)
+is_h2 = "org.h2.Driver" in text
+is_mysql = "jdbc:mysql" in text or "com.mysql" in text
 
-text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
-pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
-if not re.search(pat_url, text):
-    raise SystemExit("database.url (jdbc:h2) 없음")
-text = re.sub(
-    pat_url,
-    f"<entry key='database.url'>{escape(jdbc)}</entry>",
-    text,
-    count=1,
-)
-text = set_entry(text, "database.user", user, "sa")
-text = set_entry(text, "database.password", pwd)
-p.write_text(text, encoding="utf-8")
-print(f"traccar.xml 업데이트 완료: {p}")
+if is_h2:
+    text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
+    pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
+    if not re.search(pat_url, text):
+        raise SystemExit("database.url (jdbc:h2) 없음")
+    text = re.sub(
+        pat_url,
+        f"<entry key='database.url'>{escape(jdbc)}</entry>",
+        text,
+        count=1,
+    )
+    text = set_entry(text, "database.user", user, "sa")
+    text = set_entry(text, "database.password", pwd)
+    p.write_text(text, encoding="utf-8")
+    print(f"traccar.xml H2 → MySQL 완료: {p}")
+elif is_mysql:
+    pat_mysql = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:mysql:[^<]*</entry>"
+    if re.search(pat_mysql, text):
+        text = re.sub(
+            pat_mysql,
+            f"<entry key='database.url'>{escape(jdbc)}</entry>",
+            text,
+            count=1,
+        )
+    text = set_entry(text, "database.user", user)
+    text = set_entry(text, "database.password", pwd)
+    p.write_text(text, encoding="utf-8")
+    print(f"traccar.xml 이미 MySQL — user/password 동기화 후 계속: {p}")
+else:
+    raise SystemExit("H2/MySQL 설정 인식 실패 — grep database " + conf)
 PY
 
 echo ">> Traccar 기동"
@@ -164,6 +178,7 @@ Traccar는 H2→MariaDB **공식 자동 마이그레이션을 제공하지 않�
 | 사전 조건 | `/opt/traccar/data/database.mv.db` 존재 |
 | 작업 중 | Traccar **중지** — 단말·게이트웨이에 데이터가 버퍼될 수 있음 |
 | 소량 데이터 | 디바이스·사용자가 적으면 [§1](#1-mariadb-신규-전환) + 웹 UI 재등록이 더 빠를 수 있음 |
+| 중간 재실행 | `traccar.xml`이 이미 MySQL이면 **변환 건너뛰고** 스키마·H2 덤프·import부터 이어감 |
 
 ```bash
 # === 여기만 수정 ===
@@ -256,25 +271,39 @@ def set_entry(text, key, new_val, expect_old=None):
 
 p = Path(conf)
 text = p.read_text(encoding="utf-8")
-if "org.h2.Driver" not in text:
-    if "jdbc:mysql" in text or "com.mysql" in text:
-        raise SystemExit("이미 MySQL/MariaDB 설정 — 수동 확인")
-    raise SystemExit("H2 database.driver 없음 — grep database " + conf)
+is_h2 = "org.h2.Driver" in text
+is_mysql = "jdbc:mysql" in text or "com.mysql" in text
 
-text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
-pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
-if not re.search(pat_url, text):
-    raise SystemExit("database.url (jdbc:h2) 없음")
-text = re.sub(
-    pat_url,
-    f"<entry key='database.url'>{escape(jdbc)}</entry>",
-    text,
-    count=1,
-)
-text = set_entry(text, "database.user", user, "sa")
-text = set_entry(text, "database.password", pwd)
-p.write_text(text, encoding="utf-8")
-print(f"traccar.xml 업데이트 완료: {p}")
+if is_h2:
+    text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
+    pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
+    if not re.search(pat_url, text):
+        raise SystemExit("database.url (jdbc:h2) 없음")
+    text = re.sub(
+        pat_url,
+        f"<entry key='database.url'>{escape(jdbc)}</entry>",
+        text,
+        count=1,
+    )
+    text = set_entry(text, "database.user", user, "sa")
+    text = set_entry(text, "database.password", pwd)
+    p.write_text(text, encoding="utf-8")
+    print(f"traccar.xml H2 → MySQL 완료: {p}")
+elif is_mysql:
+    pat_mysql = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:mysql:[^<]*</entry>"
+    if re.search(pat_mysql, text):
+        text = re.sub(
+            pat_mysql,
+            f"<entry key='database.url'>{escape(jdbc)}</entry>",
+            text,
+            count=1,
+        )
+    text = set_entry(text, "database.user", user)
+    text = set_entry(text, "database.password", pwd)
+    p.write_text(text, encoding="utf-8")
+    print(f"traccar.xml 이미 MySQL — user/password 동기화 후 계속: {p}")
+else:
+    raise SystemExit("H2/MySQL 설정 인식 실패 — grep database " + conf)
 PY
 
 echo ">> MariaDB 스키마 생성 (Traccar 기동 → 중지)"
@@ -426,7 +455,7 @@ echo "OK — /etc/cron.daily/traccar-clear-logs (최근 ${LOG_DAYS}일 보관)"
 |------|------|
 | `설정 없음: /opt/traccar/conf/traccar.xml` | LXC가 아니거나 경로 다름 — `ls /opt/traccar/conf/` |
 | `database.password` / 항목 없음 | `grep database /opt/traccar/conf/traccar.xml` — 항목 누락·자기닫힘 태그는 최신 스크립트가 처리 |
-| `이미 MySQL/MariaDB` | [§1](#1-mariadb-신규-전환) 일부만 적용됐을 수 있음 — [§6](#6-수동-설정) |
+| `이미 MySQL` 메시지 (구 스크립트) | 최신 §2는 **건너뛰고** 스키마·H2 덤프·import 계속 |
 | `traccar.xml에서 찾을 수 없음` | 이미 MySQL 전환됐거나 수동 편집됨 — [§6](#6-수동-설정) |
 | DB 연결 오류 | `DB_PASS`·`DB_HOST` 확인, `mysql -e "SHOW DATABASES;"` |
 | `java: command not found` | `/opt/traccar/jre/bin/java` 사용 — 최신 §2 스크립트 또는 `JAVA=/opt/traccar/jre/bin/java` |

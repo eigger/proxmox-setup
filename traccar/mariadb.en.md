@@ -117,25 +117,39 @@ def set_entry(text, key, new_val, expect_old=None):
 
 p = Path(conf)
 text = p.read_text(encoding="utf-8")
-if "org.h2.Driver" not in text:
-    if "jdbc:mysql" in text or "com.mysql" in text:
-        raise SystemExit("already MySQL/MariaDB — check traccar.xml")
-    raise SystemExit("H2 database.driver missing — grep database " + conf)
+is_h2 = "org.h2.Driver" in text
+is_mysql = "jdbc:mysql" in text or "com.mysql" in text
 
-text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
-pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
-if not re.search(pat_url, text):
-    raise SystemExit("database.url (jdbc:h2) missing")
-text = re.sub(
-    pat_url,
-    f"<entry key='database.url'>{escape(jdbc)}</entry>",
-    text,
-    count=1,
-)
-text = set_entry(text, "database.user", user, "sa")
-text = set_entry(text, "database.password", pwd)
-p.write_text(text, encoding="utf-8")
-print(f"traccar.xml updated: {p}")
+if is_h2:
+    text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
+    pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
+    if not re.search(pat_url, text):
+        raise SystemExit("database.url (jdbc:h2) missing")
+    text = re.sub(
+        pat_url,
+        f"<entry key='database.url'>{escape(jdbc)}</entry>",
+        text,
+        count=1,
+    )
+    text = set_entry(text, "database.user", user, "sa")
+    text = set_entry(text, "database.password", pwd)
+    p.write_text(text, encoding="utf-8")
+    print(f"traccar.xml H2 → MySQL done: {p}")
+elif is_mysql:
+    pat_mysql = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:mysql:[^<]*</entry>"
+    if re.search(pat_mysql, text):
+        text = re.sub(
+            pat_mysql,
+            f"<entry key='database.url'>{escape(jdbc)}</entry>",
+            text,
+            count=1,
+        )
+    text = set_entry(text, "database.user", user)
+    text = set_entry(text, "database.password", pwd)
+    p.write_text(text, encoding="utf-8")
+    print(f"traccar.xml already MySQL — synced credentials, continuing: {p}")
+else:
+    raise SystemExit("cannot detect H2/MySQL — grep database " + conf)
 PY
 
 echo ">> Start Traccar"
@@ -164,6 +178,7 @@ Traccar provides **no official auto-migration** from H2. The script below follow
 | Prerequisite | `/opt/traccar/data/database.mv.db` exists |
 | During work | Traccar **stopped** — trackers may buffer data |
 | Small datasets | [§1](#1-fresh-mariadb-setup) + re-register in the web UI may be faster |
+| Re-run mid-migration | if `traccar.xml` is already MySQL, script **skips** conversion and continues with schema · H2 dump · import |
 
 ```bash
 # === edit only here ===
@@ -256,25 +271,39 @@ def set_entry(text, key, new_val, expect_old=None):
 
 p = Path(conf)
 text = p.read_text(encoding="utf-8")
-if "org.h2.Driver" not in text:
-    if "jdbc:mysql" in text or "com.mysql" in text:
-        raise SystemExit("already MySQL/MariaDB — check traccar.xml")
-    raise SystemExit("H2 database.driver missing — grep database " + conf)
+is_h2 = "org.h2.Driver" in text
+is_mysql = "jdbc:mysql" in text or "com.mysql" in text
 
-text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
-pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
-if not re.search(pat_url, text):
-    raise SystemExit("database.url (jdbc:h2) missing")
-text = re.sub(
-    pat_url,
-    f"<entry key='database.url'>{escape(jdbc)}</entry>",
-    text,
-    count=1,
-)
-text = set_entry(text, "database.user", user, "sa")
-text = set_entry(text, "database.password", pwd)
-p.write_text(text, encoding="utf-8")
-print(f"traccar.xml updated: {p}")
+if is_h2:
+    text = set_entry(text, "database.driver", "com.mysql.cj.jdbc.Driver", "org.h2.Driver")
+    pat_url = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:h2:[^<]*</entry>"
+    if not re.search(pat_url, text):
+        raise SystemExit("database.url (jdbc:h2) missing")
+    text = re.sub(
+        pat_url,
+        f"<entry key='database.url'>{escape(jdbc)}</entry>",
+        text,
+        count=1,
+    )
+    text = set_entry(text, "database.user", user, "sa")
+    text = set_entry(text, "database.password", pwd)
+    p.write_text(text, encoding="utf-8")
+    print(f"traccar.xml H2 → MySQL done: {p}")
+elif is_mysql:
+    pat_mysql = r"<entry\s+key=['\"]database\.url['\"]\s*>jdbc:mysql:[^<]*</entry>"
+    if re.search(pat_mysql, text):
+        text = re.sub(
+            pat_mysql,
+            f"<entry key='database.url'>{escape(jdbc)}</entry>",
+            text,
+            count=1,
+        )
+    text = set_entry(text, "database.user", user)
+    text = set_entry(text, "database.password", pwd)
+    p.write_text(text, encoding="utf-8")
+    print(f"traccar.xml already MySQL — synced credentials, continuing: {p}")
+else:
+    raise SystemExit("cannot detect H2/MySQL — grep database " + conf)
 PY
 
 echo ">> Create MariaDB schema (start Traccar → stop)"
@@ -426,7 +455,7 @@ Test: `bash /etc/cron.daily/traccar-clear-logs`
 |---------|--------|
 | `Config missing: /opt/traccar/conf/traccar.xml` | Not LXC layout — run `ls /opt/traccar/conf/` |
 | `database.password` missing | `grep database /opt/traccar/conf/traccar.xml` — latest script inserts or replaces any format |
-| `already MySQL/MariaDB` | partial §1 run — see [§6](#6-manual-config) |
+| `already MySQL` (old script) | latest §2 **skips** XML change and continues schema · H2 dump · import |
 | `Not found in traccar.xml` | Already on MySQL or manually edited — see [§6](#6-manual-config) |
 | DB connection error | check `DB_PASS`, `DB_HOST`, `mysql -e "SHOW DATABASES;"` |
 | `java: command not found` | use `/opt/traccar/jre/bin/java` — latest §2 script sets `JAVA` automatically |
