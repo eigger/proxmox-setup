@@ -317,37 +317,72 @@ echo ">> H2 SQL dump ($JAVA)"
 echo "Dump: $EXPORT ($(du -h "$EXPORT" | awk '{print $1}'))"
 
 echo ">> Convert to MySQL format"
-{
-  echo "SET FOREIGN_KEY_CHECKS=0;"
-  grep -ai "^INSERT" "$EXPORT" | grep -av DATABASECHANGELOG \
-    | sed 's/PUBLIC\.//g; s/"//g' \
-    | sed -e 's/INSERT INTO \(.*\) VALUES/INSERT INTO \L\1 \UVALUES/' \
-    | sed 's/INSERT/REPLACE/' \
-    | sed 's/REPLACE INTO tc_events(id, type, servertime/REPLACE INTO tc_events(id, type, eventtime/'
-  echo "SET FOREIGN_KEY_CHECKS=1;"
-} > "$IMPORT"
-
-python3 - "$IMPORT" <<'PY'
+python3 - "$EXPORT" "$IMPORT" <<'PY'
 import re, sys
-path = sys.argv[1]
-with open(path, encoding="utf-8") as f:
-    lines = f.readlines()
-out, n = [], 0
-for line in lines:
-    if line.startswith("REPLACE INTO tc_users(id"):
-        parts = re.split(r"\(|\)", line, maxsplit=4)
-        cols = [c.strip() for c in parts[1].split(",")]
-        if "token" in cols:
-            ti = cols.index("token")
-            cols.pop(ti)
-            vals = [v.strip() for v in parts[3].split(",")]
-            vals.pop(ti)
-            line = f"{parts[0]}({', '.join(cols)}){parts[2]}({', '.join(vals)}){parts[4]}"
-            n += 1
-    out.append(line)
-with open(path, "w", encoding="utf-8") as f:
-    f.writelines(out)
-print(f"Stripped token column from {n} tc_users rows")
+
+export_path, import_path = sys.argv[1], sys.argv[2]
+text = open(export_path, encoding="utf-8", errors="replace").read()
+
+inserts, buf = [], []
+for line in text.splitlines():
+    s = line.strip()
+    if not s or s.startswith("--") or s.startswith("//"):
+        continue
+    if re.match(r"(?i)^INSERT\s+INTO", s):
+        if buf:
+            inserts.append(" ".join(buf))
+        buf = [s]
+    elif buf:
+        buf.append(s)
+        if ";" in s:
+            inserts.append(" ".join(buf))
+            buf = []
+if buf:
+    inserts.append(" ".join(buf))
+
+def fix_tc_users_token(stmt: str) -> str:
+    if not re.match(r"(?i)REPLACE\s+INTO\s+tc_users\s*\(\s*id", stmt):
+        return stmt
+    parts = re.split(r"\(|\)", stmt, maxsplit=4)
+    if len(parts) < 5:
+        return stmt
+    cols = [c.strip() for c in parts[1].split(",")]
+    if "token" not in cols:
+        return stmt
+    ti = cols.index("token")
+    cols.pop(ti)
+    vals = [v.strip() for v in parts[3].split(",")]
+    vals.pop(ti)
+    return f"{parts[0]}({', '.join(cols)}){parts[2]}({', '.join(vals)}){parts[4]}"
+
+out = ["SET FOREIGN_KEY_CHECKS=0;"]
+users_fixed = 0
+for raw in inserts:
+    if re.search(r"(?i)DATABASECHANGELOG", raw):
+        continue
+    s = raw.strip().rstrip(";")
+    s = re.sub(r"(?i)public\.", "", s)
+    s = s.replace('"', "")
+    s = re.sub(r"(?i)^INSERT\s+INTO", "REPLACE INTO", s, count=1)
+    m = re.match(r"(?i)(REPLACE\s+INTO\s+)([^\s(;]+)", s)
+    if m:
+        s = m.group(1) + m.group(2).lower() + s[m.end(2) :]
+    s = re.sub(
+        r"(?i)(REPLACE\s+INTO\s+tc_events\s*\(\s*id\s*,\s*type\s*,\s*)servertime",
+        r"\1eventtime",
+        s,
+    )
+    before = s
+    s = fix_tc_users_token(s)
+    if s != before:
+        users_fixed += 1
+    if not re.search(r"(?i)VALUES\s*\(", s):
+        raise SystemExit(f"INSERT body missing (header only): {s[:120]}...")
+    out.append(s + ";")
+
+out.append("SET FOREIGN_KEY_CHECKS=1;")
+open(import_path, "w", encoding="utf-8").write("\n".join(out) + "\n")
+print(f"Converted {len(out) - 2} INSERT → REPLACE, tc_users token cleaned: {users_fixed}")
 PY
 
 echo ">> MariaDB import (may take a long time)"
@@ -360,6 +395,17 @@ systemctl is-active traccar && echo "OK — http://$(hostname -I | awk '{print $
 ```
 
 After completion, verify login, map, and devices in the web UI. If devices are missing on the map, link them under **Settings → Users → Connections → Devices**. Review mysql output for import errors.
+
+**Verify data** (migration success):
+
+```bash
+mysql -u traccar -p traccar -e "
+SELECT 'users' t, COUNT(*) c FROM tc_users
+UNION SELECT 'devices', COUNT(*) FROM tc_devices
+UNION SELECT 'positions', COUNT(*) FROM tc_positions;"
+```
+
+If `devices` or `positions` is 0, import failed. Run `systemctl stop traccar`, then re-run from the **Convert to MySQL format** block (`EXPORT` at `/tmp/traccar-h2-export.sql` — skip H2 dump if it still exists).
 
 ---
 
@@ -459,7 +505,9 @@ Test: `bash /etc/cron.daily/traccar-clear-logs`
 | `Not found in traccar.xml` | Already on MySQL or manually edited — see [§6](#6-manual-config) |
 | DB connection error | check `DB_PASS`, `DB_HOST`, `mysql -e "SHOW DATABASES;"` |
 | `java: command not found` | use `/opt/traccar/jre/bin/java` — latest §2 script sets `JAVA` automatically |
-| `SyntaxError` on `SET FOREIGN_KEY_CHECKS` | old script ran SQL as Python — use `python3 - "$IMPORT" <<'PY'` (latest §2), then import |
+| `SyntaxError` on `SET FOREIGN_KEY_CHECKS` | old script ran SQL as Python — use latest §2 Python conversion block |
+| `ERROR 1064` · `public.tc_` · bare `VALUES` | old `grep ^INSERT` captured **headers only** — latest §2 parses full multi-line INSERTs |
+| service `active` but no data | `mysql -f` ignores errors — run **verify counts** below and re-import |
 | §2 H2 dump fails | ensure Traccar is **stopped**; check `/opt/traccar/lib/h2-*.jar` and `$JAVA -version` |
 | §2 `tc_positions` import errors | invalid `fixtime` rows in H2 — see [forum](https://www.traccar.org/forums/topic/migration-from-h2-to-mysql/) |
 | §2 `tc_keystore` errors | empty table is OK — Traccar regenerates tokens |
