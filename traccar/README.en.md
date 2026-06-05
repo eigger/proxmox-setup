@@ -42,7 +42,7 @@ The default database is embedded H2. For production **MariaDB/MySQL**, **H2 data
 ```
 traccar/
 ├── README.md
-├── mariadb.md               # MariaDB/MySQL · scheduled DB cleanup
+├── mariadb.md               # MariaDB/MySQL · H2 migration · cron
 └── ha-rest-command.md       # HA integration details (automation · OBD)
 ```
 

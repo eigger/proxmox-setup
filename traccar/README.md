@@ -42,7 +42,7 @@ HA 연동(OsmAnd HTTP): 포트 **5055**
 ```
 traccar/
 ├── README.md
-├── mariadb.md               # MariaDB/MySQL · 주기적 DB 정리
+├── mariadb.md               # MariaDB/MySQL · H2 마이그레이션 · cron
 └── ha-rest-command.md       # HA 연동 상세 (자동화·OBD)
 ```
 
