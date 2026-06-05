@@ -29,6 +29,7 @@ ls /opt/traccar/conf/
 | `/opt/traccar/conf/traccar.xml` | Server and DB settings (edited in this guide) |
 | `/opt/traccar/data/` | H2 database (`database.mv.db`) |
 | `/opt/traccar/lib/` | `h2-*.jar`, etc. |
+| `/opt/traccar/jre/bin/java` | Bundled JRE for §2 H2 dump when `java` is not on PATH |
 | `/opt/traccar/logs/` | Application logs |
 
 | Item | Example | Description |
@@ -184,6 +185,16 @@ IMPORT="/tmp/traccar-h2-import.sql"
 [[ -f "${H2_DB}.mv.db" ]] || { echo "H2 DB missing: ${H2_DB}.mv.db"; exit 1; }
 [[ -n "$H2_JAR" ]] || { echo "H2 jar missing: /opt/traccar/lib/h2-*.jar"; exit 1; }
 
+if [[ -x /opt/traccar/jre/bin/java ]]; then
+  JAVA=/opt/traccar/jre/bin/java
+elif command -v java >/dev/null 2>&1; then
+  JAVA=java
+else
+  echo ">> Install OpenJDK (for H2 dump only)"
+  apt-get install -y -qq default-jre-headless
+  JAVA=java
+fi
+
 echo ">> Backup H2"
 systemctl stop traccar
 tar czf "/root/traccar-h2-backup-$(date +%F).tar.gz" -C /opt/traccar conf data
@@ -271,8 +282,8 @@ systemctl start traccar
 sleep 5
 systemctl stop traccar
 
-echo ">> H2 SQL dump"
-java -cp "$H2_JAR" org.h2.tools.Script \
+echo ">> H2 SQL dump ($JAVA)"
+"$JAVA" -cp "$H2_JAR" org.h2.tools.Script \
   -url "jdbc:h2:${H2_DB}" -user sa -script "$EXPORT"
 echo "Dump: $EXPORT ($(du -h "$EXPORT" | awk '{print $1}'))"
 
@@ -418,7 +429,8 @@ Test: `bash /etc/cron.daily/traccar-clear-logs`
 | `already MySQL/MariaDB` | partial §1 run — see [§6](#6-manual-config) |
 | `Not found in traccar.xml` | Already on MySQL or manually edited — see [§6](#6-manual-config) |
 | DB connection error | check `DB_PASS`, `DB_HOST`, `mysql -e "SHOW DATABASES;"` |
-| §2 H2 dump fails | ensure Traccar is **stopped**; use `/opt/traccar/lib/h2-*.jar` |
+| `java: command not found` | use `/opt/traccar/jre/bin/java` — latest §2 script sets `JAVA` automatically |
+| §2 H2 dump fails | ensure Traccar is **stopped**; check `/opt/traccar/lib/h2-*.jar` and `$JAVA -version` |
 | §2 `tc_positions` import errors | invalid `fixtime` rows in H2 — see [forum](https://www.traccar.org/forums/topic/migration-from-h2-to-mysql/) |
 | §2 `tc_keystore` errors | empty table is OK — Traccar regenerates tokens |
 | §2 devices missing on map | **Settings → Users → Connections → Devices** |

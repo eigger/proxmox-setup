@@ -29,6 +29,7 @@ ls /opt/traccar/conf/
 | `/opt/traccar/conf/traccar.xml` | DB·서버 설정 (이 문서에서 편집) |
 | `/opt/traccar/data/` | H2 DB (`database.mv.db`) |
 | `/opt/traccar/lib/` | `h2-*.jar` 등 |
+| `/opt/traccar/jre/bin/java` | Traccar 번들 JRE (§2 H2 덤프 — `java`가 PATH에 없을 때) |
 | `/opt/traccar/logs/` | 애플리케이션 로그 |
 
 | 항목 | 예시 | 설명 |
@@ -184,6 +185,16 @@ IMPORT="/tmp/traccar-h2-import.sql"
 [[ -f "${H2_DB}.mv.db" ]] || { echo "H2 DB 없음: ${H2_DB}.mv.db"; exit 1; }
 [[ -n "$H2_JAR" ]] || { echo "H2 jar 없음: /opt/traccar/lib/h2-*.jar"; exit 1; }
 
+if [[ -x /opt/traccar/jre/bin/java ]]; then
+  JAVA=/opt/traccar/jre/bin/java
+elif command -v java >/dev/null 2>&1; then
+  JAVA=java
+else
+  echo ">> OpenJDK 설치 (H2 덤프용, Traccar 서비스와 별도)"
+  apt-get install -y -qq default-jre-headless
+  JAVA=java
+fi
+
 echo ">> H2 백업"
 systemctl stop traccar
 tar czf "/root/traccar-h2-backup-$(date +%F).tar.gz" -C /opt/traccar conf data
@@ -271,8 +282,8 @@ systemctl start traccar
 sleep 5
 systemctl stop traccar
 
-echo ">> H2 SQL 덤프"
-java -cp "$H2_JAR" org.h2.tools.Script \
+echo ">> H2 SQL 덤프 ($JAVA)"
+"$JAVA" -cp "$H2_JAR" org.h2.tools.Script \
   -url "jdbc:h2:${H2_DB}" -user sa -script "$EXPORT"
 echo "덤프: $EXPORT ($(du -h "$EXPORT" | awk '{print $1}'))"
 
@@ -418,7 +429,8 @@ echo "OK — /etc/cron.daily/traccar-clear-logs (최근 ${LOG_DAYS}일 보관)"
 | `이미 MySQL/MariaDB` | [§1](#1-mariadb-신규-전환) 일부만 적용됐을 수 있음 — [§6](#6-수동-설정) |
 | `traccar.xml에서 찾을 수 없음` | 이미 MySQL 전환됐거나 수동 편집됨 — [§6](#6-수동-설정) |
 | DB 연결 오류 | `DB_PASS`·`DB_HOST` 확인, `mysql -e "SHOW DATABASES;"` |
-| §2 H2 덤프 실패 | Traccar **중지** 확인, `/opt/traccar/lib/h2-*.jar` 사용 |
+| `java: command not found` | `/opt/traccar/jre/bin/java` 사용 — 최신 §2 스크립트 또는 `JAVA=/opt/traccar/jre/bin/java` |
+| §2 H2 덤프 실패 | Traccar **중지** 확인, `/opt/traccar/lib/h2-*.jar`, `$JAVA -version` |
 | §2 `tc_positions` import 오류 | H2에 잘못된 `fixtime` 행 — [포럼](https://www.traccar.org/forums/topic/migration-from-h2-to-mysql/) 참고 |
 | §2 `tc_keystore` 오류 | 빈 테이블이면 Traccar가 토큰 재생성 |
 | §2 후 지도에 디바이스 없음 | **설정 → 사용자 → 연결 → 디바이스** |
