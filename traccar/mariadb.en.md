@@ -327,7 +327,7 @@ echo ">> Convert to MySQL format"
   echo "SET FOREIGN_KEY_CHECKS=1;"
 } > "$IMPORT"
 
-python3 <<'PY' "$IMPORT"
+python3 - "$IMPORT" <<'PY'
 import re, sys
 path = sys.argv[1]
 with open(path, encoding="utf-8") as f:
@@ -459,6 +459,7 @@ Test: `bash /etc/cron.daily/traccar-clear-logs`
 | `Not found in traccar.xml` | Already on MySQL or manually edited — see [§6](#6-manual-config) |
 | DB connection error | check `DB_PASS`, `DB_HOST`, `mysql -e "SHOW DATABASES;"` |
 | `java: command not found` | use `/opt/traccar/jre/bin/java` — latest §2 script sets `JAVA` automatically |
+| `SyntaxError` on `SET FOREIGN_KEY_CHECKS` | old script ran SQL as Python — use `python3 - "$IMPORT" <<'PY'` (latest §2), then import |
 | §2 H2 dump fails | ensure Traccar is **stopped**; check `/opt/traccar/lib/h2-*.jar` and `$JAVA -version` |
 | §2 `tc_positions` import errors | invalid `fixtime` rows in H2 — see [forum](https://www.traccar.org/forums/topic/migration-from-h2-to-mysql/) |
 | §2 `tc_keystore` errors | empty table is OK — Traccar regenerates tokens |

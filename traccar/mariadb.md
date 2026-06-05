@@ -327,7 +327,7 @@ echo ">> MySQL 형식 변환"
   echo "SET FOREIGN_KEY_CHECKS=1;"
 } > "$IMPORT"
 
-python3 <<'PY' "$IMPORT"
+python3 - "$IMPORT" <<'PY'
 import re, sys
 path = sys.argv[1]
 with open(path, encoding="utf-8") as f:
@@ -459,6 +459,7 @@ echo "OK — /etc/cron.daily/traccar-clear-logs (최근 ${LOG_DAYS}일 보관)"
 | `traccar.xml에서 찾을 수 없음` | 이미 MySQL 전환됐거나 수동 편집됨 — [§6](#6-수동-설정) |
 | DB 연결 오류 | `DB_PASS`·`DB_HOST` 확인, `mysql -e "SHOW DATABASES;"` |
 | `java: command not found` | `/opt/traccar/jre/bin/java` 사용 — 최신 §2 스크립트 또는 `JAVA=/opt/traccar/jre/bin/java` |
+| `SyntaxError` · `SET FOREIGN_KEY_CHECKS` | 구 스크립트가 SQL을 Python으로 실행함 — `python3 - "$IMPORT" <<'PY'` 형식(최신 §2)으로 `tc_users` 정리 후 import |
 | §2 H2 덤프 실패 | Traccar **중지** 확인, `/opt/traccar/lib/h2-*.jar`, `$JAVA -version` |
 | §2 `tc_positions` import 오류 | H2에 잘못된 `fixtime` 행 — [포럼](https://www.traccar.org/forums/topic/migration-from-h2-to-mysql/) 참고 |
 | §2 `tc_keystore` 오류 | 빈 테이블이면 Traccar가 토큰 재생성 |
