@@ -1,0 +1,9 @@
+# HA /config/packages/http.yaml
+# Cloudflare Tunnel 등 리버스 프록시 뒤에서 X-Forwarded-For 신뢰
+# 문서: ../config-structure.md, ../../cloudflared/tunnel-setup.md
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.30.33.0/24
+    - <CLOUDFLARED_LXC_IP>

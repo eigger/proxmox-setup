@@ -1,72 +1,93 @@
 # FreePBX
 
-Proxmox VM에 FreePBX Distro(또는 Debian + FreePBX)를 올리고 운영하는 방법입니다.
+[FreePBX](https://www.freepbx.org/) — [Asterisk](https://www.asterisk.org/) 기반 IP-PBX. Proxmox LXC로 셀프호스팅하고 Grandstream ATA·Home Assistant와 연동할 때 참고합니다.
 
-## 환경 (LAN)
+## 설치
 
-`<FREEPBX_IP>`, `<HA_IP>`는 실제 LAN 주소로 교체합니다.
+Proxmox VE **LXC** 설치 스크립트: [FreePBX — Proxmox VE Helper Scripts](https://community-scripts.org/scripts/freepbx)
 
-| 장비 | IP (플레이스홀더) |
-|------|-----------|
-| FreePBX VM | `<FREEPBX_IP>` |
-| Home Assistant | `<HA_IP>` |
-| Grandstream ATA | DHCP/고정 (내선 예: `<TARGET_EXT>`) |
-| ha-sip (HA) | SIP 내선 예: `<HA_SIP_EXT>` |
+공식 [FreePBX Debian 설치 스크립트](https://github.com/FreePBX/sng_freepbx_debian_install)를 사용합니다.
 
-## 권장 사양 (VM)
+1. Proxmox 호스트 **Shell**에서 아래 명령 실행
+2. 마법사에서 **Default** 또는 **Advanced** 선택 후 LXC 생성
 
-| 항목 | 권장 |
-|------|------|
-| OS | [FreePBX Distro](https://www.freepbx.org/downloads/) ISO |
-| vCPU | 2 |
-| RAM | 4 GB (소규모 2 GB) |
-| 디스크 | 32 GB+ (녹음·로그 사용 시 여유) |
-| 네트워크 | 브리지 `vmbr0` (SIP/RTP용 고정 IP 권장) |
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/freepbx.sh)"
+```
 
-## 설치 흐름
+설치 후 웹 UI: `http://<FREEPBX_IP>` (기본 포트 **80**)
 
-1. Proxmox에서 VM 생성 → ISO 부팅 → FreePBX Distro 설치
-2. 고정 IP·호스트명·DNS 설정
-3. 웹 UI: `https://<freepbx-ip>/` (초기 관리자 계정 설정)
-4. SIP/RTP·HTTPS(443) 방화벽 허용
-5. **Connectivity → Trunks / Extensions** — 내선 생성 후 **Apply Config**
+### 초기 설정
 
-## 포트 (기본)
+1. 고정 IP·호스트명·DNS 설정
+2. 웹 UI에서 초기 관리자 계정 설정
+3. SIP/RTP·HTTPS(443) 방화벽 허용
+4. **Connectivity → Trunks / Extensions** — 내선 생성 후 **Apply Config**
 
-| 용도 | 포트 | 프로토콜 |
-|------|------|----------|
-| SIP (내부/트렁크) | 5060 | UDP/TCP |
-| SIP TLS | 5061 | TCP |
-| AMI (HA 등) | 5038 | TCP |
-| RTP (음성) | 10000–20000 | UDP |
-| HTTPS (관리) | 443 | TCP |
-| SSH (선택) | 22 | TCP |
-
-NAT 뒤에 두는 경우 **외부에서 들어오는 SIP/RTP**는 Proxmox 호스트·공유기 포트포워딩과 FreePBX `External Address` 설정이 맞아야 합니다.
-
-## 연동 가이드
+## 장비 연동
 
 | 주제 | 문서 |
 |------|------|
 | Grandstream HT801/HT802 (SIP 내선) | [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md) |
-| Home Assistant AMI (`asterisk.send_action`) | [ha-asterisk.md](ha-asterisk.md) |
-| Home Assistant ha-sip (SIP + Edge TTS) | [ha-sip.md](ha-sip.md) |
 
-## 구성 요약
+## Home Assistant 연동
+
+AMI·ha-sip는 **애드온·UI·자동화** 기반이라 `homeassistant/packages/` 조합본은 없습니다.
+
+| 연동 가이드 | 문서 |
+|-------------|------|
+| AMI (`asterisk.send_action`) | [ha-asterisk.md](ha-asterisk.md) |
+| ha-sip (SIP + Edge TTS) | [ha-sip.md](ha-sip.md) |
+| HA packages·secrets 구조 | [homeassistant/config-structure.md](../homeassistant/config-structure.md) |
+
+## 환경 (플레이스홀더)
+
+| 장비 | IP | 비고 |
+|------|-----|------|
+| FreePBX | `<FREEPBX_IP>` | PBX LAN 주소 |
+| Home Assistant | `<HA_IP>` | AMI·ha-sip 대상 |
+| Grandstream ATA | DHCP/고정 | 내선 예: `<TARGET_EXT>` |
+| ha-sip (HA) | — | SIP 내선 `<HA_SIP_EXT>` |
+
+### 포트 (기본)
+
+| 용도 | 포트 | 프로토콜 |
+|------|------|----------|
+| SIP | 5060 | UDP/TCP |
+| SIP TLS | 5061 | TCP |
+| AMI | 5038 | TCP |
+| RTP | 10000–20000 | UDP |
+| HTTPS | 443 | TCP |
+
+NAT 환경에서는 Proxmox·공유기 포트포워딩과 FreePBX `External Address`가 일치해야 합니다.
+
+### 구성 요약
 
 ```
 [HA]  AMI :5038 ──────────────┐
 [HA]  ha-sip :5060 ───────────┼──► [FreePBX] ──SIP──► [Grandstream]
-                               │
 ```
 
-1. FreePBX에 PJSIP Extension 생성  
-2. Grandstream 등록 → [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md)  
-3. (선택) AMI + Manager User → [ha-asterisk.md](ha-asterisk.md)  
-4. (선택) ha-sip + Edge TTS → [ha-sip.md](ha-sip.md)  
+1. PJSIP Extension 생성
+2. Grandstream 등록 → [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md)
+3. (선택) AMI → [ha-asterisk.md](ha-asterisk.md)
+4. (선택) ha-sip → [ha-sip.md](ha-sip.md)
 
-## 비밀값·백업
+## 폴더 구조
 
-- SIP 트렁크·Extension Secret·AMI Secret·API 키는 **커밋하지 않습니다**.
-- 설정 백업: FreePBX **Backup & Restore** 모듈 또는 `fwconsole backup`
-- Proxmox 호스트 백업: [proxmox/gdrive-backup.md](../proxmox/gdrive-backup.md)
+```
+freepbx/
+├── README.md
+├── grandstream-ht801-ht802.md
+├── ha-asterisk.md           # HA AMI 연동
+└── ha-sip.md                # HA ha-sip 애드온
+```
+
+## 비밀값
+
+SIP 트렁크·Extension Secret·AMI Secret·API 키는 **커밋하지 않습니다**.
+
+### 백업
+
+- FreePBX **Backup & Restore** 모듈 또는 `fwconsole backup`
+- Proxmox 호스트: [proxmox/gdrive-backup.md](../proxmox/gdrive-backup.md)

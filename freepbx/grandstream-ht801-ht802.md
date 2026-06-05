@@ -1,16 +1,18 @@
-# Grandstream HT801/HT802 연동 (FreePBX / Home Assistant)
+# Grandstream HT801/HT802
 
-Grandstream ATA(HT801/HT802)를 FreePBX 또는 Home Assistant(Asterisk)에 연결해 아날로그 전화기를 내부 내선으로 쓰기 위한 설정 가이드입니다.
+[Grandstream](https://www.grandstream.com/) HT801/HT802 ATA를 FreePBX PJSIP 내선으로 등록합니다.
 
-## 1. 사전 준비 (FreePBX / HA)
+LXC·PBX: [README.md](README.md) · HA AMI: [ha-asterisk.md](ha-asterisk.md)
+
+## 1. 사전 조건 (FreePBX 내선)
 
 HT801/802를 연결하기 전에 PBX에서 내선(Extension)을 먼저 만듭니다.
 
 1. FreePBX 웹 관리자 접속 → **Applications → Extensions**
 2. **Add Extension → Add New PJSIP Extension**
 3. 아래 항목 입력 후 저장:
-   - **User Extension:** 내선 번호 (예: `1001`)
-   - **Display Name:** 표시 이름 (예: `Home_Phone`)
+   - **User Extension:** 내선 번호 (예: `<TARGET_EXT>`)
+   - **Display Name:** 표시 이름 (임의)
    - **Secret:** 인증 비밀번호 (ATA 설정에 필요 — 별도 기록)
 4. 우측 상단 **Apply Config**로 변경 사항 적용
 
@@ -26,19 +28,19 @@ HA 연동은 **별도 SIP 등록이 아니라 FreePBX AMI**로 합니다. → [h
 
 상단 **PROFILES** (구형 펌웨어는 **FXS PORTS**)에서 아래와 같이 매핑합니다.
 
-> 설정 항목이 많으면 `Ctrl + F`로 Parameter 이름을 검색해 변경하세요.
+설정 항목이 많으면 브라우저 검색으로 Parameter 이름을 찾습니다.
 
 | 설정 항목 (Parameter) | 권장 설정값 (Value) | 설명 |
-| :--- | :--- | :--- |
-| **Account Active** | `Yes` (체크) | 해당 포트 활성화 |
-| **Primary SIP Server** | `192.168.x.x` | FreePBX 또는 HA 서버 IP |
+|------|------|------|
+| **Account Active** | `Yes` | 해당 포트 활성화 |
+| **Primary SIP Server** | `<FREEPBX_IP>` | FreePBX LAN IP |
 | **SIP Transport** | `UDP` | 기본 프로토콜 |
-| **SIP Registration** | `Yes` (체크) | 서버 등록 활성화 |
-| **SIP User ID** | `1001` | FreePBX에서 만든 **내선 번호** |
-| **Authenticate ID** | `1001` | 내선 번호와 동일 |
-| **Authenticate Password** | *(Secret)* | FreePBX 내선 **Secret** (저장소에 커밋하지 않음) |
-| **Name** | `1001` | 발신 시 표시 이름 (임의) |
-| **Local SIP Port** | `5060` | FreePBX PJSIP 포트 (서버 설정에 맞춤) |
+| **SIP Registration** | `Yes` | 서버 등록 활성화 |
+| **SIP User ID** | `<TARGET_EXT>` | FreePBX **내선 번호** |
+| **Authenticate ID** | `<TARGET_EXT>` | 내선 번호와 동일 |
+| **Authenticate Password** | *(Secret)* | FreePBX 내선 Secret (**커밋하지 않음**) |
+| **Name** | `<TARGET_EXT>` | 발신 시 표시 이름 (임의) |
+| **Local SIP Port** | `5060` | FreePBX PJSIP 포트 |
 
 ## 4. 대한민국 전화 환경 (선택)
 

@@ -1,0 +1,8 @@
+# HA /config/packages/wol.yaml
+# Wake-on-LAN 스위치 — MAC을 실제 NAS 값으로 바꿉니다.
+# 문서: wol.md
+
+switch:
+  - platform: wake_on_lan
+    name: NAS Wake on lan
+    mac: <NAS_MAC>

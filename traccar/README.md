@@ -2,38 +2,42 @@
 
 [Traccar](https://www.traccar.org/) — GPS 추적 서버. Proxmox VM/LXC 또는 Docker로 셀프호스팅하고 Home Assistant 등에서 위치·텔레메트리를 전송할 때 참고합니다.
 
+## 설치
+
+Proxmox VE **LXC** 설치 스크립트: [Traccar — Proxmox VE Helper Scripts](https://community-scripts.org/scripts/traccar)
+
+1. Proxmox 호스트 **Shell**에서 아래 명령 실행
+2. 마법사에서 **Default** 또는 **Advanced** 선택 후 LXC 생성
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/traccar.sh)"
+```
+
+설치 후 웹 UI: `http://<TRACCAR_IP>:8082` (기본 포트 **8082**)  
+HA 연동(OsmAnd HTTP): 포트 **5055**
+
+## Home Assistant 연동
+
+| packages (`/config/packages/`) | 설명 |
+|----------------------------------|------|
+| [traccar.yaml](../homeassistant/packages/traccar.yaml) | `send_to_traccar` REST Command |
+
+| 연동 가이드 | 문서 |
+|-------------|------|
+| REST Command·변수·호출 예시 | [ha-rest-command.md](ha-rest-command.md) |
+| GPS + OBD 위치 자동화 | [ha-rest-command.md](ha-rest-command.md#41-gps--obd) |
+| GPS만 위치 자동화 | [ha-rest-command.md](ha-rest-command.md#42-gps만-obd-없음) |
+| HA packages·secrets 구조 | [homeassistant/config-structure.md](../homeassistant/config-structure.md) |
+
 ## 폴더 구조
 
 ```
 traccar/
 ├── README.md
-└── ha-rest-command.md       # Home Assistant → Traccar (OsmAnd HTTP)
+└── ha-rest-command.md       # HA 연동 상세 (자동화·OBD)
 ```
 
-## 연동 가이드
-
-| 주제 | 문서 |
-|------|------|
-| Home Assistant REST Command (위치·속도 등 전송) | [ha-rest-command.md](ha-rest-command.md) |
-| GPS + OBD → Traccar 위치 자동화 | [ha-rest-command.md §4.1](ha-rest-command.md#41-gps--obd) |
-| GPS만 → Traccar 위치 자동화 | [ha-rest-command.md §4.2](ha-rest-command.md#42-gps만-obd-없음) |
-
-## 설치 (요약)
-
-공식 문서: [traccar.org/install](https://www.traccar.org/install/)
-
-Docker 예시:
-
-```bash
-docker run -d --name traccar \
-  -p 8082:8082 \
-  -p 5055:5055 \
-  -v /path/to/traccar/data:/opt/traccar/data \
-  traccar/traccar:latest
-```
-
-- **8082**: 웹 UI
-- **5055**: OsmAnd 등 HTTP 프로토콜 수신 (HA REST Command가 사용)
+HA packages: [traccar.yaml](../homeassistant/packages/traccar.yaml)
 
 ## 비밀값
 

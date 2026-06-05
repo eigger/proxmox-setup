@@ -2,17 +2,17 @@
 
 Grandstream 아날로그 내선은 **FreePBX(SIP)** 에만 등록하고, Home Assistant는 **AMI(5038)** 로 PBX를 제어합니다. HA Asterisk **애드온은 불필요**합니다.
 
+LXC 설치·포트: [README.md](README.md) · `homeassistant/packages/` 조합본 없음 (애드온·자동화는 이 문서에 상세 기술)
+
 SIP로 HA에 **Edge TTS·웹훅 수신**까지 쓰려면 [ha-sip.md](ha-sip.md) (arnonym **ha-sip** 애드온)을 함께 참고합니다.
 
-## 환경 (예시)
+## 환경 (플레이스홀더)
 
-`<HA_IP>`, `<FREEPBX_IP>`는 각각 Home Assistant·FreePBX의 **LAN 주소**로 바꿉니다 (저장소에는 실제 IP를 넣지 않음).
-
-| 장비 | IP | 역할 |
-|------|-----|------|
-| Home Assistant | `<HA_IP>` | 자동화·`asterisk.send_action` |
-| FreePBX | `<FREEPBX_IP>` | PBX, AMI, PJSIP 내선 |
-| Grandstream HT801/802 | (DHCP/고정) | 내선 `1001` 등 → [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md) |
+| 항목 | 예시 | 설명 |
+|------|------|------|
+| Home Assistant | `<HA_IP>` | AMI 클라이언트 LAN 주소 |
+| FreePBX | `<FREEPBX_IP>` | PBX·AMI·PJSIP |
+| Grandstream | `<TARGET_EXT>` | ATA 내선 번호 |
 
 ```
 HA ──AMI 5038──► FreePBX ──SIP 5060──► Grandstream (아날로그 전화)
@@ -29,7 +29,7 @@ HA ──AMI 5038──► FreePBX ──SIP 5060──► Grandstream (아날�
 
 내선이 Registered여도 HA는 **`bindaddr`·Manager User** 없으면 연결되지 않습니다.
 
----
+
 
 ## 1. FreePBX — Asterisk Manager User
 
@@ -50,7 +50,7 @@ Read/Write에 **`originate`** 포함 (필요 시 report 등 추가).
 
 다른 계정(`cdrpro_events`, `srtapi_*` 등)은 `127.0.0.1`만 허용하는 **내부용** — 수정 불필요.
 
----
+
 
 ## 2. FreePBX — AMI Bind Address (필수)
 
@@ -97,7 +97,7 @@ asterisk -rx "manager show settings"
 
 > GUI **Apply Config** 후 `bindaddr`가 다시 `127.0.0.1`로 돌아가면 재수정. 반복 시 `chattr +i /etc/asterisk/manager.conf` 검토(업데이트 전 `chattr -i`).
 
----
+
 
 ## 3. 연결 확인
 
@@ -113,14 +113,14 @@ nc -zv <FREEPBX_IP> 5038
 
 ```bash
 (
-  printf 'Action: Login\r\nUsername: Homeassistant\r\nSecret: YOUR_AMI_SECRET\r\n\r\n'
+  printf 'Action: Login\r\nUsername: Homeassistant\r\nSecret: <AMI_SECRET>\r\n\r\n'
   sleep 2
 ) | nc <FREEPBX_IP> 5038
 ```
 
 `Authentication accepted` 확인.
 
----
+
 
 ## 4. Home Assistant — Asterisk 통합
 
@@ -137,7 +137,7 @@ nc -zv <FREEPBX_IP> 5038
 
 성공 시 PJSIP 내선이 HA **기기**로 표시됩니다.
 
----
+
 
 ## 5. `asterisk.send_action` — 내선으로 전화·재생
 
@@ -201,7 +201,7 @@ automation:
 asterisk -rx "channel originate PJSIP/1001 application Playback custom/ha-alert"
 ```
 
----
+
 
 ## 6. TTS 연동 (다음 단계)
 
@@ -226,7 +226,7 @@ exten => s,1,NoOp(HA TTS)
 
 **Apply Config** 후 `asterisk -rx "dialplan show ha-tts"` 확인.
 
----
+
 
 ## 7. 문제 해결
 
@@ -239,7 +239,7 @@ exten => s,1,NoOp(HA TTS)
 | 전화 즉시 종료 | timeout 너무 짧음 | `60000` 등 |
 | Grandstream OK, HA만 실패 | SIP ≠ AMI | 이 문서 2절 |
 
----
+
 
 ## 8. 보안
 

@@ -1,0 +1,23 @@
+# HA /config/packages/tmap.yaml
+# SK TMAP 자동차 경로안내 — secrets: tmap_api_key
+# 문서: tmap.md · https://openapi.sk.com/products/detail?linkMenuSeq=46
+
+rest_command:
+  request_tmap_routes:
+    url: https://apis.openapi.sk.com/tmap/routes?version=1
+    method: POST
+    headers:
+      appKey: !secret tmap_api_key
+      accept: application/json, text/html
+    content_type: application/json; charset=utf-8
+    payload: >-
+      {
+        "startX": {{ startX }},
+        "startY": {{ startY }},
+        "endX": {{ endX }},
+        "endY": {{ endY }},
+        "searchOption": {{ searchOption }},
+        "totalValue": 2,
+        "trafficInfo": "Y",
+        "mainRoadInfo": "Y"
+      }

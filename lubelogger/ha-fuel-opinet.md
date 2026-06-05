@@ -1,6 +1,8 @@
-# Home Assistant — 주유 등록 (오피넷 + LubeLogger)
+# Home Assistant ↔ LubeLogger (오피넷 주유)
 
-OBD·위치 등으로 주유 이벤트를 감지한 뒤, [오피넷(Opinet)](https://www.opinet.co.kr) API로 단가를 조회하고 [LubeLogger](https://lubelogger.com)에 주유 기록을 넣는 흐름을 정리합니다.
+OBD·위치 등으로 주유 이벤트를 감지한 뒤, [오피넷(Opinet)](https://www.opinet.co.kr) API로 단가를 조회하고 [LubeLogger](https://lubelogger.com)에 주유 기록을 넣습니다.
+
+LXC 설치·포트: [README.md](README.md) · packages: [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml), [opinet.yaml](../homeassistant/packages/opinet.yaml)
 
 ```
 오피넷 REST 센서 (단가) ──► HA 스크립트 (금액 → 주유량) ──► LubeLogger REST
@@ -10,11 +12,11 @@ OBD·위치 등으로 주유 이벤트를 감지한 뒤, [오피넷(Opinet)](htt
 
 | 단계 | 문서 |
 |------|------|
-| REST Command 정의 | [ha-rest-command.md §2](ha-rest-command.md#2-configurationyaml--rest_command) (`lubelogger_add_fuel`) |
-| 오피넷 API 키 | 이 문서 §1 |
-| **주유소 단가 센서** | 이 문서 §3 |
-| **금액 기반 주유 스크립트** | 이 문서 §4 |
-| **주유 대시보드 카드** | 이 문서 §5 |
+| REST Command | [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml) · [ha-rest-command.md](ha-rest-command.md#2-packages--rest_command) |
+| 오피넷 API 키 | [1. 오피넷 API 키 발급](#1-오피넷-api-키-발급) |
+| 주유소 단가 센서 | [3. 주유소 단가 REST 센서](#3-주유소-단가-rest-센서) |
+| 금액 기반 주유 스크립트 | [4. 금액 기반 주유 스크립트](#4-금액-기반-주유-스크립트) |
+| 주유 대시보드 카드 | [5. 주유 대시보드 카드](#5-주유-대시보드-카드) |
 
 ## 1. 오피넷 API 키 발급
 
@@ -29,14 +31,14 @@ OBD·위치 등으로 주유 이벤트를 감지한 뒤, [오피넷(Opinet)](htt
 1. [오피넷](https://www.opinet.co.kr) **회원가입**
 2. [오픈 API 이용 안내](https://www.opinet.co.kr/user/custapi/openApiIntro.do) → **인증키 발급**
 3. [유가 정보 API](https://www.opinet.co.kr/user/custapi/custApiInfo.do) → **무료 API 이용 신청**
-4. 발급받은 인증키를 `secrets.yaml`에 저장 (§2)
+4. 발급받은 인증키를 `secrets.yaml`에 저장 ([2. secrets.yaml](#2-secretsyaml))
 5. (권장) 무료 API 이용가이드 PDF 다운로드
 
 ### 주유 등록에 쓸 무료 API
 
 | API | 용도 |
 |------|------|
-| [주유소 상세정보(ID)](https://www.opinet.co.kr/user/custapi/openApiInfoDtl.do?apiId=1) | 주유소 ID로 **유종별 현재 단가** 조회 → §3 REST 센서 |
+| [주유소 상세정보(ID)](https://www.opinet.co.kr/user/custapi/openApiInfoDtl.do?apiId=1) | 주유소 ID로 **유종별 현재 단가** 조회 → [3. REST 센서](#3-주유소-단가-rest-센서) |
 | 반경 내 주유소 검색 | GPS 기준 근처 주유소·ID 탐색 |
 | 전국/지역 평균가격 | 단가 fallback |
 
@@ -57,10 +59,10 @@ opinet_nanuri_url: "https://www.opinet.co.kr/api/detailById.do?code=<API>&id=<�
 
 | 플레이스홀더 | 설명 |
 |-------------|------|
-| `<API>` | §1에서 발급받은 오피넷 인증키 |
+| `<API>` | [1. 오피넷 API 키 발급](#1-오피넷-api-키-발급)에서 발급한 인증키 |
 | `<주유소ID>` | 오피넷 주유소 ID (예: `A0010207`) — 웹·앱 **관심 주유소** 또는 [반경 검색 API](https://www.opinet.co.kr/user/custapi/custApiInfo.do)로 확인 |
 
-- URL 전체를 secret에 두면 `configuration.yaml`에 키가 노출되지 않음
+- URL 전체를 `secrets.yaml`에 두면 API 키가 packages YAML에 노출되지 않음
 - 다른 주유소는 `opinet_<이름>_url` secret을 추가하면 됨
 
 ### API 동작 확인
@@ -86,61 +88,23 @@ opinet_nanuri_url: "https://www.opinet.co.kr/api/detailById.do?code=<API>&id=<�
 
 [RESTful 센서](https://www.home-assistant.io/integrations/rest/)로 **주유소 상세 API** 응답에서 유종별 단가를 파싱합니다. 1시간(`scan_interval: 3600`)마다 갱신해 API 호출 한도를 줄입니다.
 
-`configuration.yaml` (또는 `packages/`):
+HA **packages** 패키지 파일 사용:
 
-```yaml
-rest:
-  - resource: !secret opinet_nanuri_url
-    scan_interval: 3600
-    sensor:
-      - name: "나누리 SK 휘발유"
-        unique_id: nanuri_sk_b027
-        value_template: >
-          {% if value_json is defined and value_json.RESULT is defined and value_json.RESULT.OIL is defined %}
-            {{ (value_json.RESULT.OIL[0].OIL_PRICE | selectattr('PRODCD', 'eq', 'B027') | first).PRICE | int }}
-          {% else %}
-            {{ states('sensor.nanuri_sk_hwibalyu') }}
-          {% endif %}
-        icon: mdi:gas-station
-        unit_of_measurement: KRW
-        force_update: true
+→ [homeassistant/packages/opinet.yaml](../homeassistant/packages/opinet.yaml) · [opinet.md](../homeassistant/packages/opinet.md)
 
-      - name: "나누리 SK 경유"
-        unique_id: nanuri_sk_d047
-        value_template: >
-          {% if value_json is defined and value_json.RESULT is defined and value_json.RESULT.OIL is defined %}
-            {{ (value_json.RESULT.OIL[0].OIL_PRICE | selectattr('PRODCD', 'eq', 'D047') | first).PRICE | int }}
-          {% else %}
-            {{ states('sensor.nanuri_sk_gyeongyu') }}
-          {% endif %}
-        icon: mdi:gas-station
-        unit_of_measurement: KRW
-        force_update: true
-```
+`secrets.yaml`에 `opinet_nanuri_url`이 있어야 합니다 ([2. secrets.yaml](#2-secretsyaml)).
 
-### 고급휘발유 (선택)
-
-필요 시 아래 블록을 주석 해제합니다.
-
-```yaml
-      - name: "나누리 SK 고급휘발유"
-        unique_id: nanuri_sk_b034
-        value_template: >
-          {% if value_json is defined and value_json.RESULT is defined and value_json.RESULT.OIL is defined %}
-            {{ (value_json.RESULT.OIL[0].OIL_PRICE | selectattr('PRODCD', 'eq', 'B034') | first).PRICE | int }}
-          {% else %}
-            {{ states('sensor.nanuri_sk_gogeubhwbalyu') }}
-          {% endif %}
-        icon: mdi:gas-station
-        unit_of_measurement: KRW
-        force_update: true
-```
+| name | entity_id (예) | 유종 (`PRODCD`) |
+|------|----------------|-----------------|
+| 나누리 SK 휘발유 | `sensor.nanuri_sk_hwibalyu` | B027 |
+| 나누리 SK 경유 | `sensor.nanuri_sk_gyeongyu` | D047 |
+| 나누리 SK 고급휘발유 | `sensor.nanuri_sk_gogeubhwbalyu` | B034 |
 
 ### 동작 설명
 
 | 항목 | 설명 |
 |------|------|
-| `resource: !secret opinet_nanuri_url` | `detailById` 전체 URL (§2) |
+| `resource: !secret opinet_nanuri_url` | `detailById` 전체 URL ([2. secrets.yaml](#2-secretsyaml)) |
 | `selectattr('PRODCD', 'eq', 'B027')` | JSON 배열에서 유종 코드로 단가 추출 |
 | `{% else %}` 분기 | API 실패·파싱 오류 시 **이전 값 유지** |
 | `force_update: true` | 값이 같아도 상태 업데이트 (자동화 트리거용) |
@@ -154,7 +118,7 @@ rest:
 
 ## 4. 금액 기반 주유 스크립트
 
-결제 **금액(원)** 만 입력하면, §3 **휘발유 단가 센서**와 OBD **주행거리**로 주유량(L)을 역산해 `rest_command.lubelogger_add_fuel`을 호출합니다.
+결제 **금액(원)** 만 입력하면, [3. 단가 센서](#3-주유소-단가-rest-센서)와 OBD **주행거리**로 주유량(L)을 역산해 `rest_command.lubelogger_add_fuel`을 호출합니다.
 
 ```
 fuel_consumed = 주유 금액 ÷ 리터당 단가 (sensor.nanuri_sk_hwibalyu)
@@ -202,7 +166,7 @@ lubelogger:
 
 ### 호출
 
-**설정 → 자동화 및 장면 → 스크립트**에서 실행하거나, §5 **대시보드 버튼**·자동화에서 `script.lubelogger`를 호출합니다.
+**설정 → 자동화 및 장면 → 스크립트**에서 실행하거나, [5. 대시보드 카드](#5-주유-대시보드-카드) 버튼·자동화에서 `script.lubelogger`를 호출합니다.
 
 ```yaml
 service: script.lubelogger
@@ -215,7 +179,7 @@ data:
 | 항목 | 설명 |
 |------|------|
 | `input_cost` | 실제 결제 금액 (원) |
-| `sensor.nanuri_sk_hwibalyu` | §3 나누리 SK 휘발유 단가 (원/L) |
+| `sensor.nanuri_sk_hwibalyu` | [3.](#3-주유소-단가-rest-센서) 휘발유 단가 (원/L). 고급휘발유 주유 시 `sensor.nanuri_sk_gogeubhwbalyu`로 교체 |
 | `sensor.<OBD_DEVICE>_odometer` | Colorado OBD 계기판 주행거리 |
 | `is_full: false` | 금액 입력 방식 — 가득 주유 여부는 별도 판단 |
 | 단가 0 | API·센서 오류 시 `fuel_consumed: 0.0` — LubeLogger 기록 전 단가 확인 권장 |
@@ -224,7 +188,7 @@ data:
 
 ## 5. 주유 대시보드 카드
 
-§4 스크립트를 Lovelace **그리드 + 버튼**으로 배치합니다. 고정 금액(5만·10만)은 한 번에 실행하고, **기타 주유**는 탭 시 금액 입력 UI가 열립니다.
+[4. 금액 기반 주유 스크립트](#4-금액-기반-주유-스크립트)를 Lovelace **그리드 + 버튼**으로 배치합니다. 고정 금액(5만·10만)은 한 번에 실행하고, **기타 주유**는 탭 시 금액 입력 UI가 열립니다.
 
 **대시보드 → 편집 → 수동(YAML)** 또는 **스택/섹션 → 카드 추가 → 수동**:
 
@@ -273,8 +237,7 @@ cards:
 
 금액 프리셋은 `input_cost` 값만 바꿔 추가하면 됩니다.
 
-## 6. 보안·이용
+## 6. 보안
 
 - `opinet_*_url`·API 키는 `secrets.yaml`에만 보관
-- 무료 API 일일 호출 한도 — `scan_interval` 조절·가이드 PDF 확인
-- [저작권·이용 안내](https://www.opinet.co.kr/user/custapi/custApiInfo.do) 준수
+- 무료 API 일일 호출 한도 — `scan_interval` 조절·[이용 안내](https://www.opinet.co.kr/user/custapi/custApiInfo.do) 준수

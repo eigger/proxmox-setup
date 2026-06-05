@@ -1,0 +1,19 @@
+# HA /config/packages/traccar.yaml
+# Traccar OsmAnd HTTP 프로토콜 (:5055) — URL의 <TRACCAR_IP>를 실제 값으로 바꿉니다.
+# 문서: traccar.md, ../../traccar/ha-rest-command.md
+
+rest_command:
+  send_to_traccar:
+    url: >-
+      http://<TRACCAR_IP>:5055/?id={{ id }}
+      {%- if lat is defined and lat not in [None, 'None', ''] %}&lat={{ lat }}{% endif -%}
+      {%- if lon is defined and lon not in [None, 'None', ''] %}&lon={{ lon }}{% endif -%}
+      {%- if timestamp is defined and timestamp not in [None, 'None', ''] %}&timestamp={{ timestamp }}{% endif -%}
+      {%- if speed is defined and speed not in [None, 'None', ''] %}&speed={{ speed }}{% endif -%}
+      {%- if altitude is defined and altitude not in [None, 'None', ''] %}&altitude={{ altitude }}{% endif -%}
+      {%- if bearing is defined and bearing not in [None, 'None', ''] %}&bearing={{ bearing }}{% endif -%}
+      {%- if hdop is defined and hdop not in [None, 'None', ''] %}&hdop={{ hdop }}{% endif -%}
+      {%- if batt is defined and batt not in [None, 'None', ''] %}&batt={{ batt }}{% endif -%}
+      {%- if activity is defined and activity not in [None, 'None', 'unknown', 'unavailable', ''] %}&activity={{ activity }}{% endif -%}
+      {%- if odometer is defined and odometer not in [None, 'None', ''] %}&odometer={{ odometer }}{% endif -%}
+    method: GET

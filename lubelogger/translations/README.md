@@ -1,5 +1,7 @@
 # LubeLogger 번역 파일
 
+한국어 번역 적용·PR 방법: [lubelogger/README.md](../README.md#한국어-번역)
+
 | 파일 | 용도 |
 |------|------|
 | [Asia/ko_KR.json](Asia/ko_KR.json) | 한국어 번역 |

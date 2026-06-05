@@ -2,6 +2,8 @@
 
 Home Assistant **REST Command**로 Traccar **OsmAnd HTTP 프로토콜**(포트 **5055**)에 위치·속도 등을 전송합니다.
 
+LXC 설치·포트: [README.md](README.md) · packages YAML: [traccar.yaml](../homeassistant/packages/traccar.yaml)
+
 ## 환경 (플레이스홀더)
 
 | 항목 | 예시 | 설명 |
@@ -22,27 +24,11 @@ Traccar 웹 UI에서 **장치 추가 → Identifier(Unique ID)** 가 REST Comman
 | 스마트폰 tracker | `<DEVICE_TRACKER>` | HA `device_tracker` entity 접미사 |
 | OBD | `<OBD_DEVICE>` | [espcomponents/colorado](https://github.com/eigger/espcomponents/tree/master/packages/display/colorado) (예: `esp_colorado_tab5`) |
 
-## 1. configuration.yaml — rest_command
+## 1. packages — rest_command
 
-`<TRACCAR_IP>`를 실제 값으로 바꿉니다. 정의되지 않은 선택 파라미터는 URL에 포함되지 않습니다.
+HA **packages** 패키지 파일 사용. 배치 후 URL의 `<TRACCAR_IP>`를 실제 값으로 바꿉니다. 정의되지 않은 선택 파라미터는 URL에 포함되지 않습니다.
 
-```yaml
-rest_command:
-  send_to_traccar:
-    url: >-
-      http://<TRACCAR_IP>:5055/?id={{ id }}
-      {%- if lat is defined and lat not in [None, 'None', ''] %}&lat={{ lat }}{% endif -%}
-      {%- if lon is defined and lon not in [None, 'None', ''] %}&lon={{ lon }}{% endif -%}
-      {%- if timestamp is defined and timestamp not in [None, 'None', ''] %}&timestamp={{ timestamp }}{% endif -%}
-      {%- if speed is defined and speed not in [None, 'None', ''] %}&speed={{ speed }}{% endif -%}
-      {%- if altitude is defined and altitude not in [None, 'None', ''] %}&altitude={{ altitude }}{% endif -%}
-      {%- if bearing is defined and bearing not in [None, 'None', ''] %}&bearing={{ bearing }}{% endif -%}
-      {%- if hdop is defined and hdop not in [None, 'None', ''] %}&hdop={{ hdop }}{% endif -%}
-      {%- if batt is defined and batt not in [None, 'None', ''] %}&batt={{ batt }}{% endif -%}
-      {%- if activity is defined and activity not in [None, 'None', 'unknown', 'unavailable', ''] %}&activity={{ activity }}{% endif -%}
-      {%- if odometer is defined and odometer not in [None, 'None', ''] %}&odometer={{ odometer }}{% endif -%}
-    method: GET
-```
+→ [homeassistant/packages/traccar.yaml](../homeassistant/packages/traccar.yaml) · [traccar.md](../homeassistant/packages/traccar.md)
 
 ## 2. 호출 예시
 
@@ -97,8 +83,8 @@ OBD 센서 예: [espcomponents/colorado](https://github.com/eigger/espcomponents
 
 | 패턴 | 용도 |
 |------|------|
-| [§4.1 GPS + OBD](#41-gps--obd) | 차량 OBD 속도·주행거리·엔진 부하 보강 |
-| [§4.2 GPS만](#42-gps만-obd-없음) | OBD 없는 단말 — GPS 속도만으로 activity 판별 |
+| [4.1 GPS + OBD](#41-gps--obd) | 차량 OBD 속도·주행거리·엔진 부하 보강 |
+| [4.2 GPS만](#42-gps만-obd-없음) | OBD 없는 단말 — GPS 속도만으로 activity 판별 |
 
 장치·Traccar ID가 다르면 `<DEVICE_TRACKER>`·`<DEVICE_ID>`를 기기마다 바꿉니다.
 
@@ -275,7 +261,7 @@ actions:
 | 7 – 20 | `Running` |
 | ≥ 20 | `In Vehicle` |
 
-- §4.1(OBD)과 **임계값이 다름** — GPS-only는 저속 구간을 넓게 잡음 (Still < 2 km/h)
+- [4.1 GPS + OBD](#41-gps--obd)과 **임계값이 다름** — GPS-only는 저속 구간을 넓게 잡음 (Still < 2 km/h)
 - `odometer`·`batt` 미전송 — OBD·배터리 센서 없음
 
 ## 5. Traccar 측 확인

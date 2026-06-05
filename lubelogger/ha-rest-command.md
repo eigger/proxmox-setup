@@ -2,6 +2,8 @@
 
 Home Assistant **REST Command**로 LubeLogger API에 주행거리·주유 기록을 추가합니다.
 
+LXC 설치·포트: [README.md](README.md) · packages YAML: [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml)
+
 ## 환경 (플레이스홀더)
 
 | 항목 | 예시 | 설명 |
@@ -16,62 +18,16 @@ Home Assistant ──HTTP POST──► LubeLogger API
 vLinker OBD2 ──BLE──► ESPHome (Colorado Tab5) ──MQTT──► Home Assistant
 ```
 
-## 1. secrets.yaml
+## 1. 사전 조건
 
-`configuration/secrets.yaml`에 계정을 추가합니다. **커밋하지 않습니다.**
+1. LubeLogger **Settings → Enable Authentication** (Basic Auth)
+2. `secrets.yaml`에 `lubelogger_username`, `lubelogger_password` 추가 — [lubelogger.md](../homeassistant/packages/lubelogger.md)
 
-```yaml
-lubelogger_username: "<LUBELOGGER_USER>"
-lubelogger_password: "<LUBELOGGER_PASSWORD>"
-```
+## 2. packages — rest_command
 
-LubeLogger에서 **Settings → Enable Authentication** 을 켠 경우, 일반 사용자 계정으로 Basic Auth 합니다.
+HA **packages** 패키지 파일 사용. 배치 후 URL의 `<LUBELOGGER_IP>`·포트를 실제 값으로 바꿉니다.
 
-## 2. configuration.yaml — rest_command
-
-`<LUBELOGGER_IP>`와 포트를 실제 값으로 바꿉니다.
-
-```yaml
-rest_command:
-  lubelogger_add_odometer:
-    url: "http://<LUBELOGGER_IP>:5000/api/vehicle/odometerrecords/add"
-    method: post
-    content_type: "application/json"
-    username: !secret lubelogger_username
-    password: !secret lubelogger_password
-    headers:
-      culture-invariant: "true"
-    payload: >
-      {
-        "vehicleId": {{ vehicle_id | default(1) }},
-        "date": "{{ date | default(now().strftime('%Y-%m-%d'), true) }}",
-        "odometer": {{ odometer | default(0) }},
-        "notes": "{{ notes | default('홈어시스턴트 자동 동기화') }}"
-        {%- if initial_odometer is defined and initial_odometer != '' -%}
-        ,"initialOdometer": {{ initial_odometer }}
-        {%- endif %}
-      }
-
-  lubelogger_add_fuel:
-    url: "http://<LUBELOGGER_IP>:5000/api/vehicle/gasrecords/add"
-    method: post
-    content_type: "application/json"
-    username: !secret lubelogger_username
-    password: !secret lubelogger_password
-    headers:
-      culture-invariant: "true"
-    payload: >
-      {
-        "vehicleId": {{ vehicle_id | default(1) }},
-        "date": "{{ date | default(now().strftime('%Y-%m-%d'), true) }}",
-        "odometer": {{ odometer | default(0) }},
-        "fuelConsumed": {{ fuel_consumed | default(0.0) }},
-        "cost": {{ cost | default(0) }},
-        "isFillToFull": {{ is_full | default(false) | lower }},
-        "missedFuelUp": false,
-        "notes": "{{ notes | default('홈어시스턴트 자동 동기화') }}"
-      }
-```
+→ [homeassistant/packages/lubelogger.yaml](../homeassistant/packages/lubelogger.yaml) · [lubelogger.md](../homeassistant/packages/lubelogger.md)
 
 ### 헤더
 
@@ -101,7 +57,7 @@ data:
 
 ### 주유 기록
 
-[LubeLogger REST Command](ha-rest-command.md#2-configurationyaml--rest_command)와 오피넷 단가 조회는 [ha-fuel-opinet.md](ha-fuel-opinet.md)를 따릅니다. 오피넷 **API 키 발급**부터 진행하세요.
+[LubeLogger REST Command](ha-rest-command.md#2-packages--rest_command)와 오피넷 단가 조회는 [ha-fuel-opinet.md](ha-fuel-opinet.md)를 따릅니다. 오피넷 **API 키 발급**부터 진행하세요.
 
 ```yaml
 service: rest_command.lubelogger_add_fuel

@@ -1,0 +1,44 @@
+# HA /config/packages/lubelogger.yaml
+# LubeLogger REST Command — secrets: lubelogger_username, lubelogger_password
+# URL의 <LUBELOGGER_IP>·포트를 실제 값으로 바꿉니다.
+# 문서: lubelogger.md, ../../lubelogger/ha-rest-command.md
+
+rest_command:
+  lubelogger_add_odometer:
+    url: "http://<LUBELOGGER_IP>:5000/api/vehicle/odometerrecords/add"
+    method: post
+    content_type: application/json
+    username: !secret lubelogger_username
+    password: !secret lubelogger_password
+    headers:
+      culture-invariant: "true"
+    payload: >
+      {
+        "vehicleId": {{ vehicle_id | default(1) }},
+        "date": "{{ date | default(now().strftime('%Y-%m-%d'), true) }}",
+        "odometer": {{ odometer | default(0) }},
+        "notes": "{{ notes | default('홈어시스턴트 자동 동기화') }}"
+        {% if initial_odometer is defined and initial_odometer != '' %}
+        , "initialOdometer": {{ initial_odometer }}
+        {% endif %}
+      }
+
+  lubelogger_add_fuel:
+    url: "http://<LUBELOGGER_IP>:5000/api/vehicle/gasrecords/add"
+    method: post
+    content_type: application/json
+    username: !secret lubelogger_username
+    password: !secret lubelogger_password
+    headers:
+      culture-invariant: "true"
+    payload: >
+      {
+        "vehicleId": {{ vehicle_id | default(1) }},
+        "date": "{{ date | default(now().strftime('%Y-%m-%d'), true) }}",
+        "odometer": {{ odometer | default(16500) }},
+        "fuelConsumed": {{ fuel_consumed | default(0.0) }},
+        "cost": {{ cost | default(0) }},
+        "isFillToFull": {% if is_full | default(false) %}true{% else %}false{% endif %},
+        "missedFuelUp": false,
+        "notes": "{{ notes | default('홈어시스턴트 자동 동기화') }}"
+      }

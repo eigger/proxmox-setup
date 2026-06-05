@@ -2,7 +2,11 @@
 
 [arnonym/ha-plugins](https://github.com/arnonym/ha-plugins)의 **ha-sip** 애드온으로 HA가 FreePBX에 **SIP 클라이언트**로 등록합니다. TTS는 HA **Edge TTS**(`tts.edge_tts`)를 사용합니다.
 
-> **다른 프로젝트:** [TECH7Fox Asterisk 애드온](https://github.com/TECH7Fox/asterisk-hass-addons) / [SIP-HASS](https://tech7fox.github.io/sip-hass-docs/)와 무관합니다.
+LXC 설치·포트: [README.md](README.md) · `homeassistant/packages/` 조합본 없음 (애드온 설정은 [3. ha-sip 애드온 구성](#3-ha-sip-애드온-구성-yaml))
+
+### 참고
+
+[TECH7Fox Asterisk 애드온](https://github.com/TECH7Fox/asterisk-hass-addons) / [SIP-HASS](https://tech7fox.github.io/sip-hass-docs/)와는 별개 프로젝트입니다.
 
 ## AMI 통합과의 차이
 
@@ -48,7 +52,7 @@ HA (AMI)    ──5038──────► FreePBX (자동화 Originate, 별도
 
 ## 3. ha-sip 애드온 구성 (YAML)
 
-`<FREEPBX_IP>`, `<HA_SIP_EXT>`, `FREEPBX_EXTENSION_SECRET`을 실제 값으로 바꿉니다.
+`<FREEPBX_IP>`, `<HA_SIP_EXT>`, `<FREEPBX_EXTENSION_SECRET>`을 실제 값으로 바꿉니다.
 
 ```yaml
 sip_global:
@@ -64,7 +68,7 @@ sip:
   id_uri: "sip:<HA_SIP_EXT>@<FREEPBX_IP>"
   realm: "*"
   user_name: "<HA_SIP_EXT>"
-  password: "FREEPBX_EXTENSION_SECRET"
+  password: "<FREEPBX_EXTENSION_SECRET>"
   answer_mode: listen
   settle_time: 1
   incoming_call_file: ""
@@ -81,7 +85,7 @@ tts:
   debug_print: false
 
 webhook:
-  id: sip_call_webhook_id
+  id: "<WEBHOOK_ID>"
 ```
 
 ### TTS 필드

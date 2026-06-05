@@ -1,0 +1,450 @@
+# HA /config/packages/tasmota.yaml
+# Athom Tasmota IR Remote — MQTT sensor·button (Topic: tasmota_ir)
+# 문서: tasmota.md
+
+mqtt:
+  sensor:
+    - device:
+        identifiers: Athom-IRRemote
+        manufacturer: Athom
+        name: Tasmota IR Controller
+        model: AR01
+      name: IrReceived
+      unique_id: tasmota_ir_received
+      icon: mdi:download
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      state_topic: tele/tasmota_ir/RESULT
+      value_template: >
+        {% if value_json.IrReceived is defined and value_json.IrReceived.Data is defined %}
+          {{ value_json.IrReceived.Data }}
+        {% else %}
+          N/A
+        {% endif %}
+      json_attributes_topic: tele/tasmota_ir/RESULT
+      json_attributes_template: "{{ value_json.IrReceived | tojson }}"
+
+    # - device:
+    #     identifiers: Athom-IRRemote
+    #     manufacturer: Athom
+    #     name: Tasmota IR Controller
+    #     model: AR01
+    #   name: IRSend
+    #   unique_id: tasmota_ir_irsend
+    #   icon: mdi:upload
+    #   availability_topic: tele/tasmota_ir/LWT
+    #   payload_available: Online
+    #   payload_not_available: Offline
+    #   state_topic: stat/tasmota_ir/RESULT
+    #   value_template: >
+    #     {% if value_json.IRSend is defined %}
+    #       {{ value_json.IRSend }}
+    #     {% elif value_json.IRHVAC is defined %}
+    #       {{ value_json.IRHVAC.Mode }}
+    #     {% else %}
+    #       N/A
+    #     {% endif %}
+    #   json_attributes_topic: stat/tasmota_ir/RESULT
+    #   json_attributes_template: "{{ value_json.IRHVAC | tojson }}"
+
+    # button:
+    #   - device:
+    #       identifiers: Athom-IRRemote
+    #       manufacturer: Athom
+    #       name: Tasmota IR Controller
+    #       model: AR01
+    #     name: AC On
+    #     unique_id: tasmota_ir_ac_on
+    #     icon: mdi:led-on
+    #     availability_topic: tele/tasmota_ir/LWT
+    #     payload_available: Online
+    #     payload_not_available: Offline
+    #     command_topic: cmnd/tasmota_ir/irsend
+    #     payload_press: '{"Protocol":"KELON168","Bits":168,"Data":"0x830607920000802500000000003000010000080009","Repeat":0}'
+
+  button:
+    - device:
+        identifiers: Balmuda-GreenFanS
+        manufacturer: Balmuda
+        name: GreenFanS
+        model: EGF-1700-WG
+      name: OnOff
+      unique_id: tasmota_ir_balmuda_on_off
+      icon: mdi:fan
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"PANASONIC","Bits":48,"Data":"0x32427078807F","DataLSB":"0x4C420E1E01FE","Repeat":0}'
+    - device:
+        identifiers: Balmuda-GreenFanS
+        manufacturer: Balmuda
+        name: GreenFanS
+        model: EGF-1700-WG
+      name: Rotate
+      unique_id: tasmota_ir_balmuda_fan_rotate
+      icon: mdi:rotate-3d-variant
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"PANASONIC","Bits":48,"Data":"0x32427078C03F","DataLSB":"0x4C420E1E03FC","Repeat":0}'
+    - device:
+        identifiers: Balmuda-GreenFanS
+        manufacturer: Balmuda
+        name: GreenFanS
+        model: EGF-1700-WG
+      name: Speed
+      unique_id: tasmota_ir_balmuda_fan_speed
+      icon: mdi:fan-chevron-up
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"PANASONIC","Bits":48,"Data":"0x3242707840BF","DataLSB":"0x4C420E1E02FD","Repeat":0}'
+    - device:
+        identifiers: Balmuda-GreenFanS
+        manufacturer: Balmuda
+        name: GreenFanS
+        model: EGF-1700-WG
+      name: Timer
+      unique_id: tasmota_ir_balmuda_fan_timer
+      icon: mdi:timer
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"PANASONIC","Bits":48,"Data":"0x3242707820DF","DataLSB":"0x4C420E1E04FB","Repeat":0}'
+
+    - device:
+        identifiers: Hanil-BBF
+        manufacturer: Hanil
+        name: Hanil Fan
+        model: BBF-BL12W
+      name: OnOff
+      unique_id: tasmota_ir_hanil_fan_on_off
+      icon: mdi:fan
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFFA25D","DataLSB":"0xFF45BA","Repeat":0}'
+    - device:
+        identifiers: Hanil-BBF
+        manufacturer: Hanil
+        name: Hanil Fan
+        model: BBF-BL12W
+      name: Mode
+      unique_id: tasmota_ir_hanil_fan_mode
+      icon: mdi:alpha-m-circle-outline
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFFE21D","DataLSB":"0xFF47B8","Repeat":0}'
+    - device:
+        identifiers: Hanil-BBF
+        manufacturer: Hanil
+        name: Hanil Fan
+        model: BBF-BL12W
+      name: Speed Up
+      unique_id: tasmota_ir_hanil_fan_speed_up
+      icon: mdi:fan-chevron-up
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFFE01F","DataLSB":"0xFF07F8","Repeat":0}'
+    - device:
+        identifiers: Hanil-BBF
+        manufacturer: Hanil
+        name: Hanil Fan
+        model: BBF-BL12W
+      name: Speed Down
+      unique_id: tasmota_ir_hanil_fan_speed_down
+      icon: mdi:fan-chevron-down
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFF30CF","DataLSB":"0xFF0CF3","Repeat":0}'
+    - device:
+        identifiers: Hanil-BBF
+        manufacturer: Hanil
+        name: Hanil Fan
+        model: BBF-BL12W
+      name: Rotate
+      unique_id: tasmota_ir_hanil_fan_rotate
+      icon: mdi:rotate-3d-variant
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFF10EF","DataLSB":"0xFF08F7","Repeat":0}'
+    - device:
+        identifiers: Hanil-BBF
+        manufacturer: Hanil
+        name: Hanil Fan
+        model: BBF-BL12W
+      name: Timer Plus
+      unique_id: tasmota_ir_hanil_fan_timer_plus
+      icon: mdi:timer-plus-outline
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFF906F","DataLSB":"0xFF09F6","Repeat":0}'
+    - device:
+        identifiers: Hanil-BBF
+        manufacturer: Hanil
+        name: Hanil Fan
+        model: BBF-BL12W
+      name: Timer Minus
+      unique_id: tasmota_ir_hanil_fan_timer_minus
+      icon: mdi:timer-minus-outline
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFF7A85","DataLSB":"0xFF5EA1","Repeat":0}'
+    - device:
+        identifiers: Hanil-BBF
+        manufacturer: Hanil
+        name: Hanil Fan
+        model: BBF-BL12W
+      name: Mute
+      unique_id: tasmota_ir_hanil_fan_mute
+      icon: mdi:volume-off
+      availability_topic: tele/tasmota_ir/LWT
+      payload_available: Online
+      payload_not_available: Offline
+      command_topic: cmnd/tasmota_ir/irsend
+      payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFF5AA5","DataLSB":"0xFF5AA5","Repeat":0}'
+
+    # - device:
+    #     identifiers: Daewoo-Fan
+    #     manufacturer: Daewoo
+    #     name: Daewoo Fan
+    #     model: DEF-KC3040
+    #   name: OnOff
+    #   unique_id: tasmota_ir_daewoo_fan_on_off
+    #   icon: mdi:fan
+    #   availability_topic: tele/tasmota_ir/LWT
+    #   payload_available: Online
+    #   payload_not_available: Offline
+    #   command_topic: cmnd/tasmota_ir/irsend
+    #   payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFFA25D","Repeat":1}'
+    # - device:
+    #     identifiers: Daewoo-Fan
+    #     manufacturer: Daewoo
+    #     name: Daewoo Fan
+    #     model: DEF-KC3040
+    #   name: Rotate
+    #   unique_id: tasmota_ir_daewoo_fan_rotate
+    #   icon: mdi:rotate-3d-variant
+    #   availability_topic: tele/tasmota_ir/LWT
+    #   payload_available: Online
+    #   payload_not_available: Offline
+    #   command_topic: cmnd/tasmota_ir/irsend
+    #   payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFFE21D","Repeat":1}'
+    # - device:
+    #     identifiers: Daewoo-Fan
+    #     manufacturer: Daewoo
+    #     name: Daewoo Fan
+    #     model: DEF-KC3040
+    #   name: Speed
+    #   unique_id: tasmota_ir_daewoo_fan_speed
+    #   icon: mdi:fan-chevron-up
+    #   availability_topic: tele/tasmota_ir/LWT
+    #   payload_available: Online
+    #   payload_not_available: Offline
+    #   command_topic: cmnd/tasmota_ir/irsend
+    #   payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFF02FD","Repeat":1}'
+    # - device:
+    #     identifiers: Daewoo-Fan
+    #     manufacturer: Daewoo
+    #     name: Daewoo Fan
+    #     model: DEF-KC3040
+    #   name: Timer
+    #   unique_id: tasmota_ir_daewoo_fan_timer
+    #   icon: mdi:timer
+    #   availability_topic: tele/tasmota_ir/LWT
+    #   payload_available: Online
+    #   payload_not_available: Offline
+    #   command_topic: cmnd/tasmota_ir/irsend
+    #   payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFF9867","Repeat":1}'
+    # - device:
+    #     identifiers: Daewoo-Fan
+    #     manufacturer: Daewoo
+    #     name: Daewoo Fan
+    #     model: DEF-KC3040
+    #   name: Sleep
+    #   unique_id: tasmota_ir_daewoo_fan_sleep
+    #   icon: mdi:sleep
+    #   availability_topic: tele/tasmota_ir/LWT
+    #   payload_available: Online
+    #   payload_not_available: Offline
+    #   command_topic: cmnd/tasmota_ir/irsend
+    #   payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xFF38C7","Repeat":1}'
+
+  # climate:
+  #   - device:
+  #       identifiers: Athom-IRRemote
+  #       manufacturer: Athom
+  #       name: Tasmota IR Controller
+  #       model: AR01
+  #     name: Winia
+  #     unique_id: tasmota_ir_ac_winia
+  #     availability_topic: tele/tasmota_ir/LWT
+  #     payload_available: Online
+  #     payload_not_available: Offline
+  #     modes:
+  #       - off
+  #       - cool
+  #       - fan_only
+  #       - dry
+  #     swing_modes:
+  #       - on
+  #       - off
+  #       - auto
+  #     fan_modes:
+  #       - high
+  #       - medium
+  #       - low
+  #       - auto
+  #     preset_modes:
+  #       - econo
+  #       - quiet
+  #       - turbo
+  #     power_command_topic: cmnd/tasmota_ir/irhvac
+  #     preset_mode_command_topic: cmnd/tasmota_ir/irhvac
+  #     mode_command_topic: cmnd/tasmota_ir/irhvac
+  #     temperature_command_topic: cmnd/tasmota_ir/irhvac
+  #     fan_mode_command_topic: cmnd/tasmota_ir/irhvac
+  #     swing_mode_command_topic: cmnd/tasmota_ir/irhvac
+  #     current_temperature_topic: tele/tasmota_ir/STATE
+  #     current_temperature_template: >
+  #       {% if states('sensor.ewelink_th01_temperature') not in ['unknown', 'unavailable', None] %}
+  #         {{ states('sensor.ewelink_th01_temperature') | round }}
+  #       {% else %}
+  #         None
+  #       {% endif %}
+  #     power_command_template: >
+  #       {
+  #         "Vendor": "WHIRLPOOL_AC",
+  #         "Model": "DG11J191",
+  #         "Power": "On",
+  #         "Mode": "{{ states('climate.tasmota_ir_controller_winia') | capitalize }}",
+  #         "FanSpeed": "{{ state_attr('climate.tasmota_ir_controller_winia', 'fan_mode') | capitalize }}",
+  #         "Temp": "{{ state_attr('climate.tasmota_ir_controller_winia', 'temperature') }}",
+  #         "SwingV": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'swing_mode') == 'on' else 'Off' }}",
+  #         "SwingH": "Off",
+  #         "Quiet": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'quiet' else 'Off' }}",
+  #         "Turbo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'turbo' else 'Off' }}",
+  #         "Econo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'econo' else 'Off' }}",
+  #         "Light": "On",
+  #         "Filter": "Off",
+  #         "Clean": "Off",
+  #         "iFeel": "Off",
+  #         "Sleep": -1
+  #       }
+  #     preset_mode_command_template: >
+  #       {
+  #         "Vendor": "WHIRLPOOL_AC",
+  #         "Model": "DG11J191",
+  #         "Power": "Off",
+  #         "Mode": "{{ states('climate.tasmota_ir_controller_winia') | capitalize }}",
+  #         "FanSpeed": "{{ state_attr('climate.tasmota_ir_controller_winia', 'fan_mode') | capitalize }}",
+  #         "Temp": "{{ state_attr('climate.tasmota_ir_controller_winia', 'temperature') }}",
+  #         "SwingV": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'swing_mode') == 'on' else 'Off' }}",
+  #         "SwingH": "Off",
+  #         "Quiet": "{{ 'On' if value == 'quiet' else 'Off' }}",
+  #         "Turbo": "{{ 'On' if value == 'turbo' else 'Off' }}",
+  #         "Econo": "{{ 'On' if value == 'econo' else 'Off' }}",
+  #         "Light": "On",
+  #         "Filter": "Off",
+  #         "Clean": "Off",
+  #         "iFeel": "Off",
+  #         "Sleep": -1
+  #       }
+  #     mode_command_template: >
+  #       {
+  #         "Vendor": "WHIRLPOOL_AC",
+  #         "Model": "DG11J191",
+  #         "Power": "{{ 'On' if states('climate.tasmota_ir_controller_winia') == 'off' or value == 'off' else 'Off' }}",
+  #         "Mode": "{{ 'Auto' if (value | capitalize) == 'Off' else (value | capitalize) }}",
+  #         "FanSpeed": "{{ state_attr('climate.tasmota_ir_controller_winia', 'fan_mode') | capitalize }}",
+  #         "Temp": "{{ state_attr('climate.tasmota_ir_controller_winia', 'temperature') }}",
+  #         "SwingV": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'swing_mode') == 'on' else 'Off' }}",
+  #         "SwingH": "Off",
+  #         "Quiet": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'quiet' else 'Off' }}",
+  #         "Turbo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'turbo' else 'Off' }}",
+  #         "Econo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'econo' else 'Off' }}",
+  #         "Light": "On",
+  #         "Filter": "Off",
+  #         "Clean": "Off",
+  #         "iFeel": "Off",
+  #         "Sleep": -1
+  #       }
+  #     temperature_command_template: >
+  #       {
+  #         "Vendor": "WHIRLPOOL_AC",
+  #         "Model": "DG11J191",
+  #         "Power": "Off",
+  #         "Mode": "{{ states('climate.tasmota_ir_controller_winia') | capitalize }}",
+  #         "FanSpeed": "{{ state_attr('climate.tasmota_ir_controller_winia', 'fan_mode') | capitalize }}",
+  #         "Temp": "{{ value }}",
+  #         "SwingV": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'swing_mode') == 'on' else 'Off' }}",
+  #         "SwingH": "Off",
+  #         "Quiet": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'quiet' else 'Off' }}",
+  #         "Turbo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'turbo' else 'Off' }}",
+  #         "Econo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'econo' else 'Off' }}",
+  #         "Light": "On",
+  #         "Filter": "Off",
+  #         "Clean": "Off",
+  #         "iFeel": "Off",
+  #         "Sleep": -1
+  #       }
+  #     fan_mode_command_template: >
+  #       {
+  #         "Vendor": "WHIRLPOOL_AC",
+  #         "Model": "DG11J191",
+  #         "Power": "Off",
+  #         "Mode": "{{ states('climate.tasmota_ir_controller_winia') | capitalize }}",
+  #         "FanSpeed": "{{ value | capitalize }}",
+  #         "Temp": "{{ state_attr('climate.tasmota_ir_controller_winia', 'temperature') }}",
+  #         "SwingV": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'swing_mode') == 'on' else 'Off' }}",
+  #         "SwingH": "Off",
+  #         "Quiet": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'quiet' else 'Off' }}",
+  #         "Turbo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'turbo' else 'Off' }}",
+  #         "Econo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'econo' else 'Off' }}",
+  #         "Light": "On",
+  #         "Filter": "Off",
+  #         "Clean": "Off",
+  #         "iFeel": "Off",
+  #         "Sleep": -1
+  #       }
+  #     swing_mode_command_template: >
+  #       {
+  #         "Vendor": "WHIRLPOOL_AC",
+  #         "Model": "DG11J191",
+  #         "Power": "Off",
+  #         "Mode": "{{ states('climate.tasmota_ir_controller_winia') | capitalize }}",
+  #         "FanSpeed": "{{ state_attr('climate.tasmota_ir_controller_winia', 'fan_mode') | capitalize }}",
+  #         "Temp": "{{ state_attr('climate.tasmota_ir_controller_winia', 'temperature') }}",
+  #         "SwingV": "{{ 'On' if value == 'on' else 'Off' }}",
+  #         "SwingH": "Off",
+  #         "Quiet": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'quiet' else 'Off' }}",
+  #         "Turbo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'turbo' else 'Off' }}",
+  #         "Econo": "{{ 'On' if state_attr('climate.tasmota_ir_controller_winia', 'preset_mode') == 'econo' else 'Off' }}",
+  #         "Light": "On",
+  #         "Filter": "Off",
+  #         "Clean": "Off",
+  #         "iFeel": "Off",
+  #         "Sleep": -1
+  #       }
+  #     initial: 25
+  #     min_temp: 16
+  #     max_temp: 30
+  #     precision: 1.0

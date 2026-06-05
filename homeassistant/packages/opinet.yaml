@@ -1,0 +1,43 @@
+# HA /config/packages/opinet.yaml
+# 오피넷 주유소 단가 REST 센서 — secrets: opinet_nanuri_url
+# 문서: opinet.md, ../../lubelogger/ha-fuel-opinet.md
+
+rest:
+  - resource: !secret opinet_nanuri_url
+    scan_interval: 3600
+    sensor:
+      - name: "나누리 SK 휘발유"
+        unique_id: nanuri_sk_b027
+        value_template: >
+          {% if value_json is defined and value_json.RESULT is defined and value_json.RESULT.OIL is defined %}
+            {{ (value_json.RESULT.OIL[0].OIL_PRICE | selectattr('PRODCD', 'eq', 'B027') | first).PRICE | int }}
+          {% else %}
+            {{ states('sensor.nanuri_sk_hwibalyu') }}
+          {% endif %}
+        icon: mdi:gas-station
+        unit_of_measurement: KRW
+        force_update: true
+
+      - name: "나누리 SK 경유"
+        unique_id: nanuri_sk_d047
+        value_template: >
+          {% if value_json is defined and value_json.RESULT is defined and value_json.RESULT.OIL is defined %}
+            {{ (value_json.RESULT.OIL[0].OIL_PRICE | selectattr('PRODCD', 'eq', 'D047') | first).PRICE | int }}
+          {% else %}
+            {{ states('sensor.nanuri_sk_gyeongyu') }}
+          {% endif %}
+        icon: mdi:gas-station
+        unit_of_measurement: KRW
+        force_update: true
+
+      - name: "나누리 SK 고급휘발유"
+        unique_id: nanuri_sk_b034
+        value_template: >
+          {% if value_json is defined and value_json.RESULT is defined and value_json.RESULT.OIL is defined %}
+            {{ (value_json.RESULT.OIL[0].OIL_PRICE | selectattr('PRODCD', 'eq', 'B034') | first).PRICE | int }}
+          {% else %}
+            {{ states('sensor.nanuri_sk_gogeubhwbalyu') }}
+          {% endif %}
+        icon: mdi:gas-station
+        unit_of_measurement: KRW
+        force_update: true

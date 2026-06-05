@@ -1,6 +1,8 @@
-# Proxmox → Google Drive 자동 백업 (안전 제한)
+# Proxmox — Google Drive 자동 백업
 
-Proxmox 호스트 자원에 무리를 주지 않도록 **업로드 속도·동시 전송 개수를 제한**한 통합 백업입니다.
+[rclone](https://rclone.org/)으로 Proxmox 호스트 자원에 무리를 주지 않도록 **업로드 속도·동시 전송 개수를 제한**한 LXC/VM 덤프 백업입니다.
+
+호스트 개요: [README.md](README.md)
 
 1. **1단계:** `vzdump`로 LXC/VM 로컬 덤프 (`/var/lib/vz/dump`)
 2. **2단계:** `rclone sync`로 Google Drive에 동기화
@@ -27,7 +29,7 @@ rclone config
 ### PC에서 Google 로그인 인증
 
 1. Proxmox 쉘에 출력된 `rclone authorize "drive" "..."` 명령을 **전체 복사**
-2. 본인 PC(Windows cmd / Mac 터미널)에 [Rclone 설치](https://rclone.org/downloads/) 후 해당 명령 실행
+2. 로컬 PC(Windows cmd / Mac 터미널)에 [Rclone 설치](https://rclone.org/downloads/) 후 해당 명령 실행
 3. 브라우저에서 Google 계정 로그인 → **허용(Allow)**
 4. PC 터미널에 나온 토큰 JSON (`{"access_token":"..."}` 형태)을 **통째로 복사**
 5. Proxmox `rclone config`의 `config_token>` 프롬프트에 붙여넣고 Enter
