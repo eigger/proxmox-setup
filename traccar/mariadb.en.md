@@ -18,6 +18,8 @@ Edit the **variables at the top** of each script, then paste the entire block in
 
 **Which section?** If you do not need old GPS or device history, run **[§1](#1-mariadb-only-switch-recommended) only**. Use [§2](#2-h2--mariadb-data-migration) only to migrate H2 data. If §2 fails, [§3](#3-reset-mariadb) resets data while keeping `traccar.xml` on MariaDB — re-register devices in the web UI.
 
+**Before you start:** The default community-scripts Traccar LXC disk is often **too small** for MariaDB and §2 migration. [Expand the LXC disk](#expand-proxmox-lxc-disk) on the Proxmox host **before** §1 or §2.
+
 ## Environment (placeholders)
 
 On the community-scripts **Traccar LXC**, edit **`/opt/traccar/conf/traccar.xml` only** (`conf/` contains just that file).
@@ -42,6 +44,26 @@ ls /opt/traccar/conf/
 | Database name | `traccar` | Traccar creates tables only; create DB and user manually |
 | DB user | `<DB_USER>` | e.g. `traccar` |
 | DB password | `<DB_PASSWORD>` | Do **not** commit to git |
+| Traccar LXC CTID | `<TRACCAR_CTID>` | Proxmox container ID (e.g. `105`) — `pct list` |
+
+### Expand Proxmox LXC disk
+
+MariaDB packages, DB data, §2 H2 dumps (`/tmp/traccar-h2-*.sql`), and GPS tracks (`tc_positions`) fill the **default rootfs** quickly. Run on the **Proxmox host Shell**, not inside the Traccar LXC.
+
+1. Find CTID: Proxmox UI or `pct list`
+2. Add space (e.g. **+4G** — adjust for your data):
+
+```bash
+pct resize <TRACCAR_CTID> rootfs +4G
+```
+
+3. Verify inside the Traccar LXC console:
+
+```bash
+df -h /
+```
+
+If you see `No space left on device`, `apt-get` failures, or a stalled MariaDB import, add more (`+8G`, etc.).
 
 ---
 
@@ -561,6 +583,7 @@ Test: `bash /etc/cron.daily/traccar-clear-logs`
 
 | Symptom | Action |
 |---------|--------|
+| `No space left on device` · `apt` fails | [Expand Proxmox LXC disk](#expand-proxmox-lxc-disk) — `pct resize <TRACCAR_CTID> rootfs +4G` (host Shell) |
 | `Config missing: /opt/traccar/conf/traccar.xml` | Not LXC layout — run `ls /opt/traccar/conf/` |
 | `database.password` missing | `grep database /opt/traccar/conf/traccar.xml` — latest script inserts or replaces any format |
 | `already MySQL` (old script) | latest §2 **skips** XML change and continues schema · H2 dump · import |

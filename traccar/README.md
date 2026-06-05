@@ -18,7 +18,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 설치 후 웹 UI: `http://<TRACCAR_IP>:8082` (기본 포트 **8082**)  
 HA 연동(OsmAnd HTTP): 포트 **5055**
 
-기본 DB는 내장 H2입니다. 운영용 **MariaDB만 전환(§1)**·H2 데이터 마이그레이션(§2)·초기화(§3)·주기적 DB 정리는 [mariadb.md](mariadb.md)를 참고하세요.
+기본 DB는 내장 H2입니다. 운영용 **MariaDB만 전환(§1)**·H2 데이터 마이그레이션(§2)·초기화(§3)·주기적 DB 정리는 [mariadb.md](mariadb.md)를 참고하세요. MariaDB 전환 전 LXC 디스크가 부족하면 Proxmox 호스트에서 `pct resize <TRACCAR_CTID> rootfs +4G` ([상세](mariadb.md#proxmox-lxc-디스크-확장)).
 
 ## Home Assistant 연동
 

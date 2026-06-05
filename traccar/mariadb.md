@@ -18,6 +18,8 @@ LXC 설치: [README.md](README.md) · 공식: [MySQL/MariaDB](https://www.tracca
 
 **어떤 절을 쓸까?** 예전 GPS·디바이스 기록이 필요 없으면 **[§1](#1-mariadb만-전환-권장)만** 실행합니다. H2 기록을 옮길 때만 [§2](#2-h2--mariadb-데이터-마이그레이션)를 쓰고, §2가 꼬이면 [§3](#3-mariadb-초기화)로 초기화한 뒤 웹 UI에서 디바이스를 다시 등록하면 됩니다 (`traccar.xml`은 MariaDB로 유지).
 
+**사전 작업:** community-scripts Traccar LXC **기본 디스크 용량은 MariaDB 전환·§2 마이그레이션에 부족한 경우가 많습니다.** §1·§2 실행 **전에** [Proxmox LXC 디스크 확장](#proxmox-lxc-디스크-확장)을 권장합니다.
+
 ## 환경 (플레이스홀더)
 
 community-scripts **Traccar LXC** 기준 경로입니다. 설정은 **`/opt/traccar/conf/traccar.xml` 한 파일**만 수정합니다 (`conf/`에 다른 XML을 두지 않음).
@@ -42,6 +44,26 @@ ls /opt/traccar/conf/
 | DB 이름 | `traccar` | Traccar가 테이블만 생성, DB·계정은 수동 생성 |
 | DB 사용자 | `<DB_USER>` | 예: `traccar` |
 | DB 비밀번호 | `<DB_PASSWORD>` | **git에 커밋하지 않음** |
+| Traccar LXC CTID | `<TRACCAR_CTID>` | Proxmox 컨테이너 ID (예: `105`) — `pct list` |
+
+### Proxmox LXC 디스크 확장
+
+MariaDB 패키지·DB 데이터·§2 H2 덤프(`/tmp/traccar-h2-*.sql`)·GPS 궤적(`tc_positions`) 때문에 **기본 rootfs가 금방 찹니다.** Traccar LXC **안이 아니라 Proxmox 호스트 Shell**에서 실행합니다.
+
+1. CTID 확인: Proxmox UI 또는 `pct list`
+2. 용량 추가 (예: **+4G** — 데이터 양에 따라 조절):
+
+```bash
+pct resize <TRACCAR_CTID> rootfs +4G
+```
+
+3. Traccar LXC 콘솔에서 확인:
+
+```bash
+df -h /
+```
+
+`No space left on device`·`apt-get` 실패·MariaDB import 중단이면 용량을 더 늘리세요 (`+8G` 등).
 
 ---
 
@@ -561,6 +583,7 @@ echo "OK — /etc/cron.daily/traccar-clear-logs (최근 ${LOG_DAYS}일 보관)"
 
 | 증상 | 조치 |
 |------|------|
+| `No space left on device` · `apt` 실패 | [Proxmox LXC 디스크 확장](#proxmox-lxc-디스크-확장) — `pct resize <TRACCAR_CTID> rootfs +4G` (호스트 Shell) |
 | `설정 없음: /opt/traccar/conf/traccar.xml` | LXC가 아니거나 경로 다름 — `ls /opt/traccar/conf/` |
 | `database.password` / 항목 없음 | `grep database /opt/traccar/conf/traccar.xml` — 항목 누락·자기닫힘 태그는 최신 스크립트가 처리 |
 | `이미 MySQL` 메시지 (구 스크립트) | 최신 §2는 **건너뛰고** 스키마·H2 덤프·import 계속 |
