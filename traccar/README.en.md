@@ -18,7 +18,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 Web UI after install: `http://<TRACCAR_IP>:8082` (default port **8082**)  
 HA integration (OsmAnd HTTP): port **5055**
 
-The default database is embedded H2. For production **MariaDB/MySQL**, **H2 data migration**, and **scheduled DB cleanup**, see [mariadb.en.md](mariadb.en.md).
+The default database is embedded H2. For **MariaDB-only switch (§1)**, H2 migration (§2), reset (§3), and scheduled DB cleanup, see [mariadb.en.md](mariadb.en.md).
 
 ## Home Assistant integration
 

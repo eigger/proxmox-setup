@@ -10,10 +10,13 @@ Edit the **variables at the top** of each script, then paste the entire block in
 
 | § | Topic |
 |---|-------|
-| [§1](#1-fresh-mariadb-setup) | Fresh MariaDB setup (no H2 data) |
-| [§2](#2-h2--mariadb-data-migration) | Migrate users, devices, and GPS history from H2 |
-| [§3](#3-gps-db-cleanup-cron) | Scheduled deletion of positions and events |
-| [§4](#4-server-log-cleanup-cron) | Cleanup of `/opt/traccar/logs/` application logs |
+| [§1](#1-mariadb-only-switch-recommended) | **MariaDB switch only** — no H2 data migration (start here) |
+| [§2](#2-h2--mariadb-data-migration) | Migrate users, devices, and GPS history from H2 (optional) |
+| [§3](#3-reset-mariadb) | After §2 failure: wipe DB, H2, and temp files; fresh empty MariaDB |
+| [§4](#4-gps-db-cleanup-cron) | Scheduled deletion of positions and events |
+| [§5](#5-server-log-cleanup-cron) | Cleanup of `/opt/traccar/logs/` application logs |
+
+**Which section?** If you do not need old GPS or device history, run **[§1](#1-mariadb-only-switch-recommended) only**. Use [§2](#2-h2--mariadb-data-migration) only to migrate H2 data. If §2 fails, [§3](#3-reset-mariadb) resets data while keeping `traccar.xml` on MariaDB — re-register devices in the web UI.
 
 ## Environment (placeholders)
 
@@ -42,9 +45,16 @@ ls /opt/traccar/conf/
 
 ---
 
-## 1. Fresh MariaDB setup
+## 1. MariaDB-only switch (recommended)
 
-Use when you **do not** need to keep existing GPS, device, or user history. To migrate H2 data, use [§2](#2-h2--mariadb-data-migration).
+**Changes the DB connection only** — no H2 data migration. Traccar creates an empty schema in MariaDB; register devices again in the web UI.
+
+| Item | Description |
+|------|-------------|
+| Includes | MariaDB install, DB/user creation, `traccar.xml` H2→MySQL |
+| Excludes | H2 dump, import, restoring old data |
+| Migrate H2 history | [§2](#2-h2--mariadb-data-migration) |
+| After §2 failure | [§3](#3-reset-mariadb) — no need to re-run §1 if already on MariaDB |
 
 ```bash
 # === edit only here ===
@@ -177,7 +187,7 @@ Traccar provides **no official auto-migration** from H2. The script below follow
 | What moves | Users, devices, GPS tracks, events (`tc_*` tables) |
 | Prerequisite | `/opt/traccar/data/database.mv.db` exists |
 | During work | Traccar **stopped** — trackers may buffer data |
-| Small datasets | [§1](#1-fresh-mariadb-setup) + re-register in the web UI may be faster |
+| Small datasets | [§1](#1-mariadb-only-switch-recommended) + re-register in the web UI may be faster |
 | Re-run mid-migration | if `traccar.xml` is already MySQL, script **skips** conversion and continues with schema · H2 dump · import |
 
 ```bash
@@ -405,15 +415,67 @@ UNION SELECT 'devices', COUNT(*) FROM tc_devices
 UNION SELECT 'positions', COUNT(*) FROM tc_positions;"
 ```
 
-If `devices` or `positions` is 0, import failed. Run `systemctl stop traccar`, then re-run from the **Convert to MySQL format** block (`EXPORT` at `/tmp/traccar-h2-export.sql` — skip H2 dump if it still exists).
+If `devices` or `positions` is 0, import failed. Run `systemctl stop traccar`, then re-run from the **Convert to MySQL format** block (`EXPORT` at `/tmp/traccar-h2-export.sql` — skip H2 dump if it still exists). To give up, use [§3](#3-reset-mariadb).
 
 ---
 
-## 3. GPS DB cleanup cron
+## 3. Reset MariaDB
+
+Use when §2 migration failed or you decide to **run MariaDB only** without old data. Keeps `traccar.xml` on MariaDB — only wipes DB contents.
+
+| Mode | H2 files | Use case |
+|------|----------|----------|
+| **A. MariaDB only** | Keep | Retry §2 later |
+| **B. Full wipe** | Delete | Fresh start — re-register devices in web UI |
+
+```bash
+# === edit only here ===
+DB_USER="traccar"
+DB_PASS="your_db_password_here"
+WIPE_H2="yes"                # yes = delete H2 (mode B) | no = keep H2 (mode A)
+# ======================
+
+set -euo pipefail
+
+systemctl stop traccar
+
+echo ">> Reset MariaDB traccar database"
+mysql -u root <<SQL
+DROP DATABASE IF EXISTS traccar;
+CREATE DATABASE traccar CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON traccar.* TO '${DB_USER}'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+
+echo ">> Remove §2 temp files"
+rm -f /tmp/traccar-h2-export.sql /tmp/traccar-h2-import.sql
+
+if [[ "${WIPE_H2}" == "yes" ]]; then
+  echo ">> Delete H2 DB files"
+  rm -f /opt/traccar/data/database.mv.db /opt/traccar/data/database.trace.db
+else
+  echo ">> H2 kept: /opt/traccar/data/database.mv.db (§2 retry possible)"
+fi
+
+systemctl start traccar
+sleep 5
+systemctl is-active traccar && echo "OK — http://$(hostname -I | awk '{print $1}'):8082"
+
+mysql -u "$DB_USER" -p"$DB_PASS" traccar -e "
+SELECT 'users' t, COUNT(*) c FROM tc_users
+UNION SELECT 'devices', COUNT(*) FROM tc_devices
+UNION SELECT 'positions', COUNT(*) FROM tc_positions;"
+```
+
+Liquibase recreates the schema on an empty DB — same as a **fresh install**. Log in (usually `admin` / `admin`), change the password, and re-add devices. If still on H2 (§1 not run), use [§1](#1-mariadb-only-switch-recommended) instead.
+
+---
+
+## 4. GPS DB cleanup cron
 
 Periodically deletes `tc_positions` (GPS tracks) and `tc_events` (alarms) in the DB. Uses the [official batch-delete](https://www.traccar.org/clear-history/) approach so Traccar can keep receiving data.
 
-Run after [§1](#1-fresh-mariadb-setup) or [§2](#2-h2--mariadb-data-migration). Same if you still use H2.
+Run after **§1, §2, or §3** with Traccar running. Same if you still use H2.
 
 ```bash
 # === edit only here ===
@@ -469,9 +531,9 @@ Test: `bash /etc/cron.daily/traccar-clear-database`
 
 ---
 
-## 4. Server log cleanup cron
+## 5. Server log cleanup cron
 
-Cleans **application logs** under `/opt/traccar/logs/` (startup, connections, errors). GPS tracks live in the DB; use [§3](#3-gps-db-cleanup-cron) `KEEP` for retention.
+Cleans **application logs** under `/opt/traccar/logs/` (startup, connections, errors). GPS tracks live in the DB; use [§4](#4-gps-db-cleanup-cron) `KEEP` for retention.
 
 Can run regardless of MariaDB or H2.
 
@@ -495,14 +557,15 @@ Test: `bash /etc/cron.daily/traccar-clear-logs`
 
 ---
 
-## 5. Troubleshooting
+## 6. Troubleshooting
 
 | Symptom | Action |
 |---------|--------|
 | `Config missing: /opt/traccar/conf/traccar.xml` | Not LXC layout — run `ls /opt/traccar/conf/` |
 | `database.password` missing | `grep database /opt/traccar/conf/traccar.xml` — latest script inserts or replaces any format |
 | `already MySQL` (old script) | latest §2 **skips** XML change and continues schema · H2 dump · import |
-| `Not found in traccar.xml` | Already on MySQL or manually edited — see [§6](#6-manual-config) |
+| `Not found in traccar.xml` | Already on MySQL or manually edited — see [§7](#7-manual-config) |
+| §2 failed / messy data | [§3](#3-reset-mariadb) — keep `traccar.xml`, reset DB only |
 | DB connection error | check `DB_PASS`, `DB_HOST`, `mysql -e "SHOW DATABASES;"` |
 | `java: command not found` | use `/opt/traccar/jre/bin/java` — latest §2 script sets `JAVA` automatically |
 | `SyntaxError` on `SET FOREIGN_KEY_CHECKS` | old script ran SQL as Python — use latest §2 Python conversion block |
@@ -512,12 +575,12 @@ Test: `bash /etc/cron.daily/traccar-clear-logs`
 | §2 `tc_positions` import errors | invalid `fixtime` rows in H2 — see [forum](https://www.traccar.org/forums/topic/migration-from-h2-to-mysql/) |
 | §2 `tc_keystore` errors | empty table is OK — Traccar regenerates tokens |
 | §2 devices missing on map | **Settings → Users → Connections → Devices** |
-| §1 empty UI | H2 not migrated — use [§2](#2-h2--mariadb-data-migration) or re-register |
-| §3 slow cron | confirm indexes exist |
+| §1 empty UI | expected (no migration) — re-register devices or use [§2](#2-h2--mariadb-data-migration) |
+| §4 slow cron | confirm indexes exist |
 
 For GUI table copy, use SQuirreL or RazorSQL — [forum details](https://www.traccar.org/forums/topic/migration-from-h2-to-mysql/)
 
-## 6. Manual config
+## 7. Manual config
 
 Replace the four H2 lines in `/opt/traccar/conf/traccar.xml`:
 
@@ -530,7 +593,7 @@ Replace the four H2 lines in `/opt/traccar/conf/traccar.xml`:
 
 The bundled MySQL driver is sufficient; a native MariaDB driver is optional per [official docs](https://www.traccar.org/mysql/).
 
-## 7. Security
+## 8. Security
 
 - Do **not** commit `DB_PASS`, `/root/.my.cnf`, or `traccar.xml` credentials to the repo
 - If the password contains `&`, `'`, `"`, or other special characters, use a simpler password before running the script

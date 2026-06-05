@@ -10,10 +10,13 @@ LXC 설치: [README.md](README.md) · 공식: [MySQL/MariaDB](https://www.tracca
 
 | § | 내용 |
 |---|------|
-| [§1](#1-mariadb-신규-전환) | H2 데이터 없이 MariaDB로 새로 시작 |
-| [§2](#2-h2--mariadb-데이터-마이그레이션) | H2 사용자·디바이스·GPS 기록 이전 |
-| [§3](#3-gps-db-정리-cron) | DB 위치·이벤트 주기 삭제 |
-| [§4](#4-서버-로그-정리-cron) | `/opt/traccar/logs/` 애플리케이션 로그 정리 |
+| [§1](#1-mariadb만-전환-권장) | **H2 데이터 이전 없이** MariaDB만 전환 (대부분 여기만) |
+| [§2](#2-h2--mariadb-데이터-마이그레이션) | H2 사용자·디바이스·GPS 기록 이전 (선택) |
+| [§3](#3-mariadb-초기화) | §2 실패·포기 시 DB·H2·임시 파일 삭제 후 빈 MariaDB로 재시작 |
+| [§4](#4-gps-db-정리-cron) | DB 위치·이벤트 주기 삭제 |
+| [§5](#5-서버-로그-정리-cron) | `/opt/traccar/logs/` 애플리케이션 로그 정리 |
+
+**어떤 절을 쓸까?** 예전 GPS·디바이스 기록이 필요 없으면 **[§1](#1-mariadb만-전환-권장)만** 실행합니다. H2 기록을 옮길 때만 [§2](#2-h2--mariadb-데이터-마이그레이션)를 쓰고, §2가 꼬이면 [§3](#3-mariadb-초기화)로 초기화한 뒤 웹 UI에서 디바이스를 다시 등록하면 됩니다 (`traccar.xml`은 MariaDB로 유지).
 
 ## 환경 (플레이스홀더)
 
@@ -42,9 +45,16 @@ ls /opt/traccar/conf/
 
 ---
 
-## 1. MariaDB 신규 전환
+## 1. MariaDB만 전환 (권장)
 
-기존 GPS·디바이스·사용자 기록을 **이전하지 않고** MariaDB로 새로 시작할 때 사용합니다. H2 데이터를 옮기려면 [§2](#2-h2--mariadb-데이터-마이그레이션)를 사용하세요.
+H2에서 MariaDB로 **연결만 바꿉니다.** 사용자·디바이스·GPS 기록은 이전하지 않습니다. Traccar가 빈 MariaDB에 스키마를 만들고, 웹 UI에서 디바이스를 새로 등록하면 됩니다.
+
+| 항목 | 설명 |
+|------|------|
+| 포함 | MariaDB 설치, DB·계정 생성, `traccar.xml` H2→MySQL |
+| 미포함 | H2 덤프, import, 예전 데이터 복구 |
+| H2 기록 이전 | [§2](#2-h2--mariadb-데이터-마이그레이션) |
+| §2 실패 후 | [§3](#3-mariadb-초기화) → 이미 MariaDB면 §1 재실행 불필요 |
 
 ```bash
 # === 여기만 수정 ===
@@ -177,7 +187,7 @@ Traccar는 H2→MariaDB **공식 자동 마이그레이션을 제공하지 않�
 | 이전 대상 | 사용자·디바이스·GPS 궤적·이벤트 (`tc_*` 테이블) |
 | 사전 조건 | `/opt/traccar/data/database.mv.db` 존재 |
 | 작업 중 | Traccar **중지** — 단말·게이트웨이에 데이터가 버퍼될 수 있음 |
-| 소량 데이터 | 디바이스·사용자가 적으면 [§1](#1-mariadb-신규-전환) + 웹 UI 재등록이 더 빠를 수 있음 |
+| 소량 데이터 | 디바이스·사용자가 적으면 [§1](#1-mariadb만-전환-권장) + 웹 UI 재등록이 더 빠를 수 있음 |
 | 중간 재실행 | `traccar.xml`이 이미 MySQL이면 **변환 건너뛰고** 스키마·H2 덤프·import부터 이어감 |
 
 ```bash
@@ -405,15 +415,67 @@ UNION SELECT 'devices', COUNT(*) FROM tc_devices
 UNION SELECT 'positions', COUNT(*) FROM tc_positions;"
 ```
 
-`devices`·`positions`가 0이면 import가 실패한 것입니다. `systemctl stop traccar` 후 **MySQL 형식 변환** 블록부터 다시 실행하세요 (`EXPORT`는 `/tmp/traccar-h2-export.sql`에 있으면 H2 덤프 생략 가능).
+`devices`·`positions`가 0이면 import가 실패한 것입니다. `systemctl stop traccar` 후 **MySQL 형식 변환** 블록부터 다시 실행하세요 (`EXPORT`는 `/tmp/traccar-h2-export.sql`에 있으면 H2 덤프 생략 가능). 포기하면 [§3](#3-mariadb-초기화).
 
 ---
 
-## 3. GPS DB 정리 cron
+## 3. MariaDB 초기화
+
+§2 마이그레이션이 실패했거나, **예전 데이터 없이 MariaDB만 쓰겠다**고 결정했을 때 사용합니다. `traccar.xml`은 MariaDB 설정을 **그대로 둡니다** — DB 내용만 비웁니다.
+
+| 모드 | H2 파일 | 용도 |
+|------|---------|------|
+| **A. MariaDB만** | 유지 | §2를 나중에 다시 시도 |
+| **B. 전체** | 삭제 | 완전 새 시작 (디바이스 웹 UI 재등록) |
+
+```bash
+# === 여기만 수정 ===
+DB_USER="traccar"
+DB_PASS="여기에_DB_비밀번호"
+WIPE_H2="yes"                # yes = H2 삭제(모드 B) | no = H2 유지(모드 A)
+# ====================
+
+set -euo pipefail
+
+systemctl stop traccar
+
+echo ">> MariaDB traccar DB 초기화"
+mysql -u root <<SQL
+DROP DATABASE IF EXISTS traccar;
+CREATE DATABASE traccar CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON traccar.* TO '${DB_USER}'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+
+echo ">> §2 임시 파일 삭제"
+rm -f /tmp/traccar-h2-export.sql /tmp/traccar-h2-import.sql
+
+if [[ "${WIPE_H2}" == "yes" ]]; then
+  echo ">> H2 DB 파일 삭제"
+  rm -f /opt/traccar/data/database.mv.db /opt/traccar/data/database.trace.db
+else
+  echo ">> H2 유지: /opt/traccar/data/database.mv.db (§2 재시도 가능)"
+fi
+
+systemctl start traccar
+sleep 5
+systemctl is-active traccar && echo "OK — http://$(hostname -I | awk '{print $1}'):8082"
+
+mysql -u "$DB_USER" -p"$DB_PASS" traccar -e "
+SELECT 'users' t, COUNT(*) c FROM tc_users
+UNION SELECT 'devices', COUNT(*) FROM tc_devices
+UNION SELECT 'positions', COUNT(*) FROM tc_positions;"
+```
+
+Liquibase가 빈 DB에 스키마를 만들면 **새 설치와 동일**합니다. 기본 로그인(보통 `admin` / `admin`) 후 비밀번호·디바이스를 다시 설정하세요. H2를 아직 쓰는 경우(§1 미실행)에는 이 절 대신 [§1](#1-mariadb만-전환-권장)을 사용하세요.
+
+---
+
+## 4. GPS DB 정리 cron
 
 DB `tc_positions`(GPS 궤적)·`tc_events`(알람)를 주기적으로 삭제합니다. [공식 배치 삭제](https://www.traccar.org/clear-history/) 방식으로 소량씩 DELETE하여 Traccar 수신을 막지 않습니다.
 
-**§1 또는 §2** 완료 후 Traccar가 기동된 상태에서 실행합니다. H2를 그대로 쓰는 경우에도 동일합니다.
+**§1·§2·§3** 완료 후 Traccar가 기동된 상태에서 실행합니다. H2를 그대로 쓰는 경우에도 동일합니다.
 
 ```bash
 # === 여기만 수정 ===
@@ -469,9 +531,9 @@ echo "OK — /etc/cron.daily/traccar-clear-database (보관: ${KEEP})"
 
 ---
 
-## 4. 서버 로그 정리 cron
+## 5. 서버 로그 정리 cron
 
-Traccar가 `/opt/traccar/logs/`에 기록하는 **애플리케이션 로그**(기동·연결·오류)를 정리합니다. GPS 궤적은 DB에 저장되며 보관 기간은 [§3](#3-gps-db-정리-cron) `KEEP`으로 조절합니다.
+Traccar가 `/opt/traccar/logs/`에 기록하는 **애플리케이션 로그**(기동·연결·오류)를 정리합니다. GPS 궤적은 DB에 저장되며 보관 기간은 [§4](#4-gps-db-정리-cron) `KEEP`으로 조절합니다.
 
 MariaDB/H2와 무관하게 실행할 수 있습니다.
 
@@ -495,14 +557,15 @@ echo "OK — /etc/cron.daily/traccar-clear-logs (최근 ${LOG_DAYS}일 보관)"
 
 ---
 
-## 5. 문제 해결
+## 6. 문제 해결
 
 | 증상 | 조치 |
 |------|------|
 | `설정 없음: /opt/traccar/conf/traccar.xml` | LXC가 아니거나 경로 다름 — `ls /opt/traccar/conf/` |
 | `database.password` / 항목 없음 | `grep database /opt/traccar/conf/traccar.xml` — 항목 누락·자기닫힘 태그는 최신 스크립트가 처리 |
 | `이미 MySQL` 메시지 (구 스크립트) | 최신 §2는 **건너뛰고** 스키마·H2 덤프·import 계속 |
-| `traccar.xml에서 찾을 수 없음` | 이미 MySQL 전환됐거나 수동 편집됨 — [§6](#6-수동-설정) |
+| `traccar.xml에서 찾을 수 없음` | 이미 MySQL 전환됐거나 수동 편집됨 — [§7](#7-수동-설정) |
+| §2 포기·데이터 꼬임 | [§3](#3-mariadb-초기화) — `traccar.xml` 유지, DB만 초기화 |
 | DB 연결 오류 | `DB_PASS`·`DB_HOST` 확인, `mysql -e "SHOW DATABASES;"` |
 | `java: command not found` | `/opt/traccar/jre/bin/java` 사용 — 최신 §2 스크립트 또는 `JAVA=/opt/traccar/jre/bin/java` |
 | `SyntaxError` · `SET FOREIGN_KEY_CHECKS` | 구 스크립트가 SQL을 Python으로 실행함 — 최신 §2 Python 변환 블록 사용 |
@@ -512,12 +575,12 @@ echo "OK — /etc/cron.daily/traccar-clear-logs (최근 ${LOG_DAYS}일 보관)"
 | §2 `tc_positions` import 오류 | H2에 잘못된 `fixtime` 행 — [포럼](https://www.traccar.org/forums/topic/migration-from-h2-to-mysql/) 참고 |
 | §2 `tc_keystore` 오류 | 빈 테이블이면 Traccar가 토큰 재생성 |
 | §2 후 지도에 디바이스 없음 | **설정 → 사용자 → 연결 → 디바이스** |
-| §1 후 빈 UI | H2 미이전 — [§2](#2-h2--mariadb-데이터-마이그레이션) 또는 재등록 |
-| §3 cron 느림 | 인덱스 생성 여부 확인 |
+| §1 후 빈 UI | 정상(데이터 미이전) — 디바이스 재등록 또는 [§2](#2-h2--mariadb-데이터-마이그레이션) |
+| §4 cron 느림 | 인덱스 생성 여부 확인 |
 
 GUI로 테이블 복사를 선호하면 SQuirreL·RazorSQL — [포럼 상세](https://www.traccar.org/forums/topic/migration-from-h2-to-mysql/)
 
-## 6. 수동 설정
+## 7. 수동 설정
 
 `/opt/traccar/conf/traccar.xml`에서 H2 4줄을 아래로 교체:
 
@@ -530,7 +593,7 @@ GUI로 테이블 복사를 선호하면 SQuirreL·RazorSQL — [포럼 상세](h
 
 [MariaDB 네이티브 드라이버](https://www.traccar.org/mysql/)는 Traccar 번들 MySQL 드라이버로 충분합니다.
 
-## 7. 보안
+## 8. 보안
 
 - `DB_PASS`·`/root/.my.cnf`·`traccar.xml` — **저장소에 커밋하지 않음**
 - DB 비밀번호에 `&`, `'`, `"` 등 XML/쉘 특수문자가 있으면 스크립트 전 **영문·숫자 위주로 변경** 권장
