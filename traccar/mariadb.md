@@ -17,6 +17,20 @@ LXC 설치: [README.md](README.md) · 공식: [MySQL/MariaDB](https://www.tracca
 
 ## 환경 (플레이스홀더)
 
+community-scripts **Traccar LXC** 기준 경로입니다. 설정은 **`/opt/traccar/conf/traccar.xml` 한 파일**만 수정합니다 (`conf/`에 다른 XML을 두지 않음).
+
+```bash
+ls /opt/traccar/conf/
+# traccar.xml
+```
+
+| 경로 | 내용 |
+|------|------|
+| `/opt/traccar/conf/traccar.xml` | DB·서버 설정 (이 문서에서 편집) |
+| `/opt/traccar/data/` | H2 DB (`database.mv.db`) |
+| `/opt/traccar/lib/` | `h2-*.jar` 등 |
+| `/opt/traccar/logs/` | 애플리케이션 로그 |
+
 | 항목 | 예시 | 설명 |
 |------|------|------|
 | Traccar 설정 | `/opt/traccar/conf/traccar.xml` | DB 연결 설정 |
@@ -40,6 +54,9 @@ DB_HOST="localhost"          # 원격 DB면 IP/호스트명
 
 set -euo pipefail
 
+CONF="/opt/traccar/conf/traccar.xml"
+[[ -f "$CONF" ]] || { echo "설정 없음: $CONF (ls /opt/traccar/conf/ 확인)"; exit 1; }
+
 echo ">> MariaDB 설치"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
@@ -58,6 +75,7 @@ echo ">> traccar.xml H2 → MySQL"
 systemctl stop traccar
 python3 <<PY
 from pathlib import Path
+import re
 
 user, pwd, host = "${DB_USER}", "${DB_PASS}", "${DB_HOST}"
 jdbc = (
@@ -66,24 +84,23 @@ jdbc = (
     "&useSSL=false&allowMultiQueries=true&autoReconnect=true"
     "&useUnicode=yes&characterEncoding=UTF-8&sessionVariables=sql_mode=''"
 )
-p = Path("/opt/traccar/conf/traccar.xml")
+p = Path("${CONF}")
 text = p.read_text(encoding="utf-8")
-repl = [
-    ("<entry key='database.driver'>org.h2.Driver</entry>",
-     "<entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>"),
-    ("<entry key='database.url'>jdbc:h2:./data/database</entry>",
-     f"<entry key='database.url'>{jdbc}</entry>"),
-    ("<entry key='database.user'>sa</entry>",
-     f"<entry key='database.user'>{user}</entry>"),
-    ("<entry key='database.password'></entry>",
-     f"<entry key='database.password'>{pwd}</entry>"),
+pairs = [
+    ("database.driver", "org.h2.Driver", "com.mysql.cj.jdbc.Driver"),
+    ("database.url", "jdbc:h2:./data/database", jdbc),
+    ("database.user", "sa", user),
+    ("database.password", "", pwd),
 ]
-for old, new in repl:
-    if old not in text:
-        raise SystemExit(f"traccar.xml에서 찾을 수 없음: {old[:50]}… (이미 전환됐거나 파일 형식 다름)")
-    text = text.replace(old, new)
+for key, old_val, new_val in pairs:
+    pat = rf"<entry key=['\"]{re.escape(key)}['\"]>{re.escape(old_val)}</entry>"
+    rep = f"<entry key='{key}'>{new_val}</entry>"
+    new_text, n = re.subn(pat, rep, text, count=1)
+    if n == 0:
+        raise SystemExit(f"traccar.xml에서 찾을 수 없음: {key}={old_val[:40]}… ({p})")
+    text = new_text
 p.write_text(text, encoding="utf-8")
-print("traccar.xml 업데이트 완료")
+print(f"traccar.xml 업데이트 완료: {p}")
 PY
 
 echo ">> Traccar 기동"
@@ -122,6 +139,9 @@ DB_HOST="localhost"
 
 set -euo pipefail
 
+CONF="/opt/traccar/conf/traccar.xml"
+[[ -f "$CONF" ]] || { echo "설정 없음: $CONF (ls /opt/traccar/conf/ 확인)"; exit 1; }
+
 H2_DB="/opt/traccar/data/database"
 H2_JAR="$(ls /opt/traccar/lib/h2-*.jar 2>/dev/null | head -1)"
 EXPORT="/tmp/traccar-h2-export.sql"
@@ -150,6 +170,7 @@ SQL
 echo ">> traccar.xml H2 → MySQL"
 python3 <<PY
 from pathlib import Path
+import re
 user, pwd, host = "${DB_USER}", "${DB_PASS}", "${DB_HOST}"
 jdbc = (
     f"jdbc:mysql://{host}:3306/traccar?"
@@ -157,23 +178,23 @@ jdbc = (
     "&useSSL=false&allowMultiQueries=true&autoReconnect=true"
     "&useUnicode=yes&characterEncoding=UTF-8&sessionVariables=sql_mode=''"
 )
-p = Path("/opt/traccar/conf/traccar.xml")
+p = Path("${CONF}")
 text = p.read_text(encoding="utf-8")
-repl = [
-    ("<entry key='database.driver'>org.h2.Driver</entry>",
-     "<entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>"),
-    ("<entry key='database.url'>jdbc:h2:./data/database</entry>",
-     f"<entry key='database.url'>{jdbc}</entry>"),
-    ("<entry key='database.user'>sa</entry>",
-     f"<entry key='database.user'>{user}</entry>"),
-    ("<entry key='database.password'></entry>",
-     f"<entry key='database.password'>{pwd}</entry>"),
+pairs = [
+    ("database.driver", "org.h2.Driver", "com.mysql.cj.jdbc.Driver"),
+    ("database.url", "jdbc:h2:./data/database", jdbc),
+    ("database.user", "sa", user),
+    ("database.password", "", pwd),
 ]
-for old, new in repl:
-    if old not in text:
-        raise SystemExit(f"traccar.xml에서 찾을 수 없음: {old[:50]}…")
-    text = text.replace(old, new)
+for key, old_val, new_val in pairs:
+    pat = rf"<entry key=['\"]{re.escape(key)}['\"]>{re.escape(old_val)}</entry>"
+    rep = f"<entry key='{key}'>{new_val}</entry>"
+    new_text, n = re.subn(pat, rep, text, count=1)
+    if n == 0:
+        raise SystemExit(f"traccar.xml에서 찾을 수 없음: {key}={old_val[:40]}… ({p})")
+    text = new_text
 p.write_text(text, encoding="utf-8")
+print(f"traccar.xml 업데이트 완료: {p}")
 PY
 
 echo ">> MariaDB 스키마 생성 (Traccar 기동 → 중지)"
@@ -323,6 +344,7 @@ echo "OK — /etc/cron.daily/traccar-clear-logs (최근 ${LOG_DAYS}일 보관)"
 
 | 증상 | 조치 |
 |------|------|
+| `설정 없음: /opt/traccar/conf/traccar.xml` | LXC가 아니거나 경로 다름 — `ls /opt/traccar/conf/` |
 | `traccar.xml에서 찾을 수 없음` | 이미 MySQL 전환됐거나 수동 편집됨 — [§6](#6-수동-설정) |
 | DB 연결 오류 | `DB_PASS`·`DB_HOST` 확인, `mysql -e "SHOW DATABASES;"` |
 | §2 H2 덤프 실패 | Traccar **중지** 확인, `/opt/traccar/lib/h2-*.jar` 사용 |

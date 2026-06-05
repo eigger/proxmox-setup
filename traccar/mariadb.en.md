@@ -17,6 +17,20 @@ Edit the **variables at the top** of each script, then paste the entire block in
 
 ## Environment (placeholders)
 
+On the community-scripts **Traccar LXC**, edit **`/opt/traccar/conf/traccar.xml` only** (`conf/` contains just that file).
+
+```bash
+ls /opt/traccar/conf/
+# traccar.xml
+```
+
+| Path | Contents |
+|------|----------|
+| `/opt/traccar/conf/traccar.xml` | Server and DB settings (edited in this guide) |
+| `/opt/traccar/data/` | H2 database (`database.mv.db`) |
+| `/opt/traccar/lib/` | `h2-*.jar`, etc. |
+| `/opt/traccar/logs/` | Application logs |
+
 | Item | Example | Description |
 |------|---------|-------------|
 | Traccar config | `/opt/traccar/conf/traccar.xml` | DB connection settings |
@@ -40,6 +54,9 @@ DB_HOST="localhost"          # remote DB: IP or hostname
 
 set -euo pipefail
 
+CONF="/opt/traccar/conf/traccar.xml"
+[[ -f "$CONF" ]] || { echo "Config missing: $CONF (check ls /opt/traccar/conf/)"; exit 1; }
+
 echo ">> Install MariaDB"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
@@ -58,6 +75,7 @@ echo ">> traccar.xml H2 → MySQL"
 systemctl stop traccar
 python3 <<PY
 from pathlib import Path
+import re
 
 user, pwd, host = "${DB_USER}", "${DB_PASS}", "${DB_HOST}"
 jdbc = (
@@ -66,24 +84,23 @@ jdbc = (
     "&useSSL=false&allowMultiQueries=true&autoReconnect=true"
     "&useUnicode=yes&characterEncoding=UTF-8&sessionVariables=sql_mode=''"
 )
-p = Path("/opt/traccar/conf/traccar.xml")
+p = Path("${CONF}")
 text = p.read_text(encoding="utf-8")
-repl = [
-    ("<entry key='database.driver'>org.h2.Driver</entry>",
-     "<entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>"),
-    ("<entry key='database.url'>jdbc:h2:./data/database</entry>",
-     f"<entry key='database.url'>{jdbc}</entry>"),
-    ("<entry key='database.user'>sa</entry>",
-     f"<entry key='database.user'>{user}</entry>"),
-    ("<entry key='database.password'></entry>",
-     f"<entry key='database.password'>{pwd}</entry>"),
+pairs = [
+    ("database.driver", "org.h2.Driver", "com.mysql.cj.jdbc.Driver"),
+    ("database.url", "jdbc:h2:./data/database", jdbc),
+    ("database.user", "sa", user),
+    ("database.password", "", pwd),
 ]
-for old, new in repl:
-    if old not in text:
-        raise SystemExit(f"Not found in traccar.xml: {old[:50]}… (already migrated or different format)")
-    text = text.replace(old, new)
+for key, old_val, new_val in pairs:
+    pat = rf"<entry key=['\"]{re.escape(key)}['\"]>{re.escape(old_val)}</entry>"
+    rep = f"<entry key='{key}'>{new_val}</entry>"
+    new_text, n = re.subn(pat, rep, text, count=1)
+    if n == 0:
+        raise SystemExit(f"Not found in traccar.xml: {key}={old_val[:40]}… ({p})")
+    text = new_text
 p.write_text(text, encoding="utf-8")
-print("traccar.xml updated")
+print(f"traccar.xml updated: {p}")
 PY
 
 echo ">> Start Traccar"
@@ -122,6 +139,9 @@ DB_HOST="localhost"
 
 set -euo pipefail
 
+CONF="/opt/traccar/conf/traccar.xml"
+[[ -f "$CONF" ]] || { echo "Config missing: $CONF (check ls /opt/traccar/conf/)"; exit 1; }
+
 H2_DB="/opt/traccar/data/database"
 H2_JAR="$(ls /opt/traccar/lib/h2-*.jar 2>/dev/null | head -1)"
 EXPORT="/tmp/traccar-h2-export.sql"
@@ -150,6 +170,7 @@ SQL
 echo ">> traccar.xml H2 → MySQL"
 python3 <<PY
 from pathlib import Path
+import re
 user, pwd, host = "${DB_USER}", "${DB_PASS}", "${DB_HOST}"
 jdbc = (
     f"jdbc:mysql://{host}:3306/traccar?"
@@ -157,23 +178,23 @@ jdbc = (
     "&useSSL=false&allowMultiQueries=true&autoReconnect=true"
     "&useUnicode=yes&characterEncoding=UTF-8&sessionVariables=sql_mode=''"
 )
-p = Path("/opt/traccar/conf/traccar.xml")
+p = Path("${CONF}")
 text = p.read_text(encoding="utf-8")
-repl = [
-    ("<entry key='database.driver'>org.h2.Driver</entry>",
-     "<entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>"),
-    ("<entry key='database.url'>jdbc:h2:./data/database</entry>",
-     f"<entry key='database.url'>{jdbc}</entry>"),
-    ("<entry key='database.user'>sa</entry>",
-     f"<entry key='database.user'>{user}</entry>"),
-    ("<entry key='database.password'></entry>",
-     f"<entry key='database.password'>{pwd}</entry>"),
+pairs = [
+    ("database.driver", "org.h2.Driver", "com.mysql.cj.jdbc.Driver"),
+    ("database.url", "jdbc:h2:./data/database", jdbc),
+    ("database.user", "sa", user),
+    ("database.password", "", pwd),
 ]
-for old, new in repl:
-    if old not in text:
-        raise SystemExit(f"Not found in traccar.xml: {old[:50]}…")
-    text = text.replace(old, new)
+for key, old_val, new_val in pairs:
+    pat = rf"<entry key=['\"]{re.escape(key)}['\"]>{re.escape(old_val)}</entry>"
+    rep = f"<entry key='{key}'>{new_val}</entry>"
+    new_text, n = re.subn(pat, rep, text, count=1)
+    if n == 0:
+        raise SystemExit(f"Not found in traccar.xml: {key}={old_val[:40]}… ({p})")
+    text = new_text
 p.write_text(text, encoding="utf-8")
+print(f"traccar.xml updated: {p}")
 PY
 
 echo ">> Create MariaDB schema (start Traccar → stop)"
@@ -323,6 +344,7 @@ Test: `bash /etc/cron.daily/traccar-clear-logs`
 
 | Symptom | Action |
 |---------|--------|
+| `Config missing: /opt/traccar/conf/traccar.xml` | Not LXC layout — run `ls /opt/traccar/conf/` |
 | `Not found in traccar.xml` | Already on MySQL or manually edited — see [§6](#6-manual-config) |
 | DB connection error | check `DB_PASS`, `DB_HOST`, `mysql -e "SHOW DATABASES;"` |
 | §2 H2 dump fails | ensure Traccar is **stopped**; use `/opt/traccar/lib/h2-*.jar` |
