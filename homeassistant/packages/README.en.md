@@ -11,8 +11,7 @@ HA instance path: `/config/packages/`
 | packages | Contents | Integration guide |
 |----------|------|-------------|
 | [http.yaml](http.yaml) | `trusted_proxies` | [cloudflared/tunnel-setup.en.md](../../cloudflared/tunnel-setup.en.md#5-home-assistant--trusted_proxies) · [http.en.md](http.en.md) |
-| [opinet.yaml](opinet.yaml) | Opinet fuel station price REST | [lubelogger/ha-fuel-opinet.en.md](../../lubelogger/ha-fuel-opinet.en.md) · [opinet.en.md](opinet.en.md) |
-| [lubelogger.yaml](lubelogger.yaml) | LubeLogger `rest_command` | [lubelogger/ha-rest-command.en.md](../../lubelogger/ha-rest-command.en.md) · [lubelogger.en.md](lubelogger.en.md) |
+| [lubelogger.yaml](lubelogger.yaml) | LubeLogger `rest_command` | [lubelogger/ha-rest-command.en.md](../../lubelogger/ha-rest-command.en.md) · [lubelogger.en.md](lubelogger.en.md) · fuel: [hass-opinet](https://github.com/eigger/hass-opinet) · [ha-fuel-opinet.en.md](../../lubelogger/ha-fuel-opinet.en.md) |
 | [traccar.yaml](traccar.yaml) | Traccar `send_to_traccar` | [traccar/ha-rest-command.en.md](../../traccar/ha-rest-command.en.md) · [traccar.en.md](traccar.en.md) |
 | [tasmota.yaml](tasmota.yaml) | Athom IR Remote MQTT | [tasmota.en.md](tasmota.en.md) |
 | [tmap.yaml](tmap.yaml) | SK TMAP route guidance | [tmap.en.md](tmap.en.md) |

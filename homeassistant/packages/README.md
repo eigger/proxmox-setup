@@ -11,8 +11,7 @@ HA 인스턴스 경로: `/config/packages/`
 | packages | 내용 | 연동 가이드 |
 |----------|------|-------------|
 | [http.yaml](http.yaml) | `trusted_proxies` | [cloudflared/tunnel-setup.md](../../cloudflared/tunnel-setup.md#5-home-assistant--trusted_proxies) · [http.md](http.md) |
-| [opinet.yaml](opinet.yaml) | 오피넷 주유소 단가 REST | [lubelogger/ha-fuel-opinet.md](../../lubelogger/ha-fuel-opinet.md) · [opinet.md](opinet.md) |
-| [lubelogger.yaml](lubelogger.yaml) | LubeLogger `rest_command` | [lubelogger/ha-rest-command.md](../../lubelogger/ha-rest-command.md) · [lubelogger.md](lubelogger.md) |
+| [lubelogger.yaml](lubelogger.yaml) | LubeLogger `rest_command` | [lubelogger/ha-rest-command.md](../../lubelogger/ha-rest-command.md) · [lubelogger.md](lubelogger.md) · 주유: [hass-opinet](https://github.com/eigger/hass-opinet) · [ha-fuel-opinet.md](../../lubelogger/ha-fuel-opinet.md) |
 | [traccar.yaml](traccar.yaml) | Traccar `send_to_traccar` | [traccar/ha-rest-command.md](../../traccar/ha-rest-command.md) · [traccar.md](traccar.md) |
 | [tasmota.yaml](tasmota.yaml) | Athom IR Remote MQTT | [tasmota.md](tasmota.md) |
 | [tmap.yaml](tmap.yaml) | SK TMAP 경로안내 | [tmap.md](tmap.md) |

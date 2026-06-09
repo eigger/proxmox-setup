@@ -51,7 +51,7 @@ homeassistant:
 | packages | 연동 상세 |
 |----------|-----------|
 | [http.yaml](packages/http.yaml) | [cloudflared/tunnel-setup.md](../cloudflared/tunnel-setup.md#5-home-assistant--trusted_proxies) |
-| [opinet.yaml](packages/opinet.yaml) | [lubelogger/ha-fuel-opinet.md](../lubelogger/ha-fuel-opinet.md) |
+| [hass-opinet](https://github.com/eigger/hass-opinet) | 오피넷 유가 (LubeLogger 주유) | [lubelogger/ha-fuel-opinet.md](../lubelogger/ha-fuel-opinet.md) |
 | [lubelogger.yaml](packages/lubelogger.yaml) | [lubelogger/ha-rest-command.md](../lubelogger/ha-rest-command.md) |
 | [traccar.yaml](packages/traccar.yaml) | [traccar/ha-rest-command.md](../traccar/ha-rest-command.md) |
 | [tasmota.yaml](packages/tasmota.yaml) | [tasmota.md](packages/tasmota.md) |
@@ -67,7 +67,7 @@ HA 전용(LXC 폴더 없음): `tasmota`, `tmap`, `wol`, `recorder` — packages�
 
 | 서비스 | LXC README | packages | 연동 상세 |
 |--------|------------|----------|-----------|
-| LubeLogger | [lubelogger/README.md](../lubelogger/README.md) | lubelogger, opinet | [ha-rest-command.md](../lubelogger/ha-rest-command.md), [ha-fuel-opinet.md](../lubelogger/ha-fuel-opinet.md) |
+| LubeLogger | [lubelogger/README.md](../lubelogger/README.md) | lubelogger, [hass-opinet](https://github.com/eigger/hass-opinet) | [ha-rest-command.md](../lubelogger/ha-rest-command.md), [ha-fuel-opinet.md](../lubelogger/ha-fuel-opinet.md) |
 | Traccar | [traccar/README.md](../traccar/README.md) | traccar | [ha-rest-command.md](../traccar/ha-rest-command.md) |
 | grocy | [grocy/README.md](../grocy/README.md) | — | [ha-niimbot.md](../grocy/ha-niimbot.md) |
 | Cloudflared | [cloudflared/README.md](../cloudflared/README.md) | http | [tunnel-setup.md](../cloudflared/tunnel-setup.md) |

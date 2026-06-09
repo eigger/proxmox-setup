@@ -59,7 +59,6 @@ Example: `packages/lubelogger.yaml` → package key `lubelogger`
     ├── lubelogger.yaml      # LubeLogger REST·automations
     ├── traccar.yaml         # Traccar REST·automations
     ├── http.yaml            # trusted_proxies (Tunnel·proxy)
-    ├── opinet.yaml          # Opinet fuel price REST
     ├── tasmota.yaml         # Athom IR Remote MQTT
     ├── tmap.yaml            # SK TMAP route guidance
     ├── wol.yaml             # Wake-on-LAN
@@ -93,7 +92,6 @@ Short integration settings such as `rest_command` and `rest` live in [packages/]
 | HA `packages/` | This repo | Integration docs |
 |----------------|---------|-----------|
 | `http.yaml` | [packages/http.yaml](packages/http.yaml) | [cloudflared/](../cloudflared/tunnel-setup.en.md) |
-| `opinet.yaml` | [packages/opinet.yaml](packages/opinet.yaml) | [lubelogger/ha-fuel-opinet.en.md](../lubelogger/ha-fuel-opinet.en.md) |
 | `lubelogger.yaml` | [packages/lubelogger.yaml](packages/lubelogger.yaml) | [lubelogger/ha-rest-command.en.md](../lubelogger/ha-rest-command.en.md) |
 | `tasmota.yaml` | [packages/tasmota.yaml](packages/tasmota.yaml) | [packages/tasmota.en.md](packages/tasmota.en.md) |
 | `tmap.yaml` | [packages/tmap.yaml](packages/tmap.yaml) | [packages/tmap.en.md](packages/tmap.en.md) |
@@ -110,7 +108,6 @@ Secrets only. Package YAML references them with `!secret`.
 ```yaml
 lubelogger_username: "<LUBELOGGER_USER>"
 lubelogger_password: "<LUBELOGGER_PASSWORD>"
-opinet_nanuri_url: "https://www.opinet.co.kr/api/detailById.do?code=<API>&id=<주유소ID>&out=json"
 tmap_api_key: "<TMAP_APP_KEY>"
 recorder_db_url: "mysql://<USER>:<PASS>@<DB_HOST>:3306/homeassistant?charset=utf8mb4"
 ```

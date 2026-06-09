@@ -56,7 +56,7 @@ data:
 | 주제 | 문서 |
 |------|------|
 | REST Command 상세·OBD 자동화 | [lubelogger/ha-rest-command.md](../../lubelogger/ha-rest-command.md) |
-| 오피넷 단가 센서 | [opinet.yaml](opinet.yaml) · [ha-fuel-opinet.md](../../lubelogger/ha-fuel-opinet.md) |
+| 오피넷·주유 | [hass-opinet](https://github.com/eigger/hass-opinet) · [ha-fuel-opinet.md](../../lubelogger/ha-fuel-opinet.md) |
 
 ## 적용
 

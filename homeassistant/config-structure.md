@@ -59,7 +59,6 @@ homeassistant:
     ├── lubelogger.yaml      # LubeLogger REST·자동화
     ├── traccar.yaml         # Traccar REST·자동화
     ├── http.yaml            # trusted_proxies (Tunnel·프록시)
-    ├── opinet.yaml          # 오피넷 주유소 단가 REST
     ├── tasmota.yaml         # Athom IR Remote MQTT
     ├── tmap.yaml            # SK TMAP 경로안내
     ├── wol.yaml             # Wake-on-LAN
@@ -93,7 +92,6 @@ homeassistant:
 | HA `packages/` | 이 repo | 연동 문서 |
 |----------------|---------|-----------|
 | `http.yaml` | [packages/http.yaml](packages/http.yaml) | [cloudflared/](../cloudflared/tunnel-setup.md) |
-| `opinet.yaml` | [packages/opinet.yaml](packages/opinet.yaml) | [lubelogger/ha-fuel-opinet.md](../lubelogger/ha-fuel-opinet.md) |
 | `lubelogger.yaml` | [packages/lubelogger.yaml](packages/lubelogger.yaml) | [lubelogger/ha-rest-command.md](../lubelogger/ha-rest-command.md) |
 | `tasmota.yaml` | [packages/tasmota.yaml](packages/tasmota.yaml) | [packages/tasmota.md](packages/tasmota.md) |
 | `tmap.yaml` | [packages/tmap.yaml](packages/tmap.yaml) | [packages/tmap.md](packages/tmap.md) |
@@ -109,7 +107,6 @@ homeassistant:
 ```yaml
 lubelogger_username: "<LUBELOGGER_USER>"
 lubelogger_password: "<LUBELOGGER_PASSWORD>"
-opinet_nanuri_url: "https://www.opinet.co.kr/api/detailById.do?code=<API>&id=<주유소ID>&out=json"
 tmap_api_key: "<TMAP_APP_KEY>"
 recorder_db_url: "mysql://<USER>:<PASS>@<DB_HOST>:3306/homeassistant?charset=utf8mb4"
 ```

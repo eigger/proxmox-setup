@@ -59,7 +59,7 @@ data:
 
 ### Fuel record
 
-Follow [LubeLogger REST Command](ha-rest-command.en.md#2-packages--rest_command) and Opinet price lookup in [ha-fuel-opinet.en.md](ha-fuel-opinet.en.md). Start with Opinet **API key issuance**.
+Follow [LubeLogger REST Command](ha-rest-command.en.md#2-packages--rest_command) and [hass-opinet](https://github.com/eigger/hass-opinet) fuel logging in [ha-fuel-opinet.en.md](ha-fuel-opinet.en.md). Start with Opinet **API key issuance**.
 
 ```yaml
 service: rest_command.lubelogger_add_fuel

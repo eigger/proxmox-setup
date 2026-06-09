@@ -22,12 +22,15 @@ Web UI after install: `http://<LUBELOGGER_IP>:5000` (default port **5000**)
 | packages (`/config/packages/`) | Description |
 |----------------------------------|------|
 | [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml) | REST Command (odometer, fuel) |
-| [opinet.yaml](../homeassistant/packages/opinet.yaml) | Opinet gas station price REST sensors |
+
+| Integration | Description |
+|-------------|-------------|
+| [hass-opinet](https://github.com/eigger/hass-opinet) | Opinet fuel prices (HACS custom integration) |
 
 | Integration guide | Document |
 |-------------|------|
 | REST Command · OBD odometer automation | [ha-rest-command.en.md](ha-rest-command.en.md) |
-| Fuel (Opinet API · script · dashboard) | [ha-fuel-opinet.en.md](ha-fuel-opinet.en.md) |
+| Fuel (hass-opinet · script · dashboard) | [ha-fuel-opinet.en.md](ha-fuel-opinet.en.md) |
 | HA packages · secrets layout | [homeassistant/config-structure.en.md](../homeassistant/config-structure.en.md) |
 
 ## Folder structure
@@ -36,13 +39,13 @@ Web UI after install: `http://<LUBELOGGER_IP>:5000` (default port **5000**)
 lubelogger/
 ├── README.md
 ├── ha-rest-command.md       # HA integration details (automation · OBD)
-├── ha-fuel-opinet.md        # Fuel integration details (Opinet · script)
+├── ha-fuel-opinet.md        # Fuel integration (hass-opinet · script)
 └── translations/
     └── Asia/
         └── ko_KR.json         # Korean translation
 ```
 
-HA packages: [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml), [opinet.yaml](../homeassistant/packages/opinet.yaml)
+HA packages: [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml) · Opinet: [hass-opinet](https://github.com/eigger/hass-opinet)
 
 The `translations/` layout matches the official translation repo [hargata/lubelog_translations](https://github.com/hargata/lubelog_translations). For PR submission, copy `Asia/ko_KR.json` as-is.
 

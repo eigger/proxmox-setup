@@ -51,7 +51,7 @@ Full table and integration links: [packages/README.en.md](packages/README.en.md)
 | packages | Integration details |
 |----------|-----------|
 | [http.yaml](packages/http.yaml) | [cloudflared/tunnel-setup.en.md](../cloudflared/tunnel-setup.en.md#5-home-assistant--trusted_proxies) |
-| [opinet.yaml](packages/opinet.yaml) | [lubelogger/ha-fuel-opinet.en.md](../lubelogger/ha-fuel-opinet.en.md) |
+| [hass-opinet](https://github.com/eigger/hass-opinet) | [lubelogger/ha-fuel-opinet.en.md](../lubelogger/ha-fuel-opinet.en.md) |
 | [lubelogger.yaml](packages/lubelogger.yaml) | [lubelogger/ha-rest-command.en.md](../lubelogger/ha-rest-command.en.md) |
 | [traccar.yaml](packages/traccar.yaml) | [traccar/ha-rest-command.en.md](../traccar/ha-rest-command.en.md) |
 | [tasmota.yaml](packages/tasmota.yaml) | [tasmota.en.md](packages/tasmota.en.md) |
@@ -67,7 +67,7 @@ Each service **README** covers installation and ports only; HA integration uses 
 
 | Service | LXC README | packages | Integration details |
 |--------|------------|----------|-----------|
-| LubeLogger | [lubelogger/README.en.md](../lubelogger/README.en.md) | lubelogger, opinet | [ha-rest-command.en.md](../lubelogger/ha-rest-command.en.md), [ha-fuel-opinet.en.md](../lubelogger/ha-fuel-opinet.en.md) |
+| LubeLogger | [lubelogger/README.en.md](../lubelogger/README.en.md) | lubelogger, [hass-opinet](https://github.com/eigger/hass-opinet) | [ha-rest-command.en.md](../lubelogger/ha-rest-command.en.md), [ha-fuel-opinet.en.md](../lubelogger/ha-fuel-opinet.en.md) |
 | Traccar | [traccar/README.en.md](../traccar/README.en.md) | traccar | [ha-rest-command.en.md](../traccar/ha-rest-command.en.md) |
 | grocy | [grocy/README.en.md](../grocy/README.en.md) | — | [ha-niimbot.en.md](../grocy/ha-niimbot.en.md) |
 | Cloudflared | [cloudflared/README.en.md](../cloudflared/README.en.md) | http | [tunnel-setup.en.md](../cloudflared/tunnel-setup.en.md) |

@@ -22,12 +22,15 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 | packages (`/config/packages/`) | 설명 |
 |----------------------------------|------|
 | [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml) | REST Command (주행거리·주유) |
-| [opinet.yaml](../homeassistant/packages/opinet.yaml) | 오피넷 주유소 단가 REST 센서 |
+
+| 연동 | 설명 |
+|------|------|
+| [hass-opinet](https://github.com/eigger/hass-opinet) | 오피넷 유가 (HACS 커스텀 통합) |
 
 | 연동 가이드 | 문서 |
 |-------------|------|
 | REST Command·OBD 주행거리 자동화 | [ha-rest-command.md](ha-rest-command.md) |
-| 주유 (오피넷 API·스크립트·대시보드) | [ha-fuel-opinet.md](ha-fuel-opinet.md) |
+| 주유 (hass-opinet·스크립트·대시보드) | [ha-fuel-opinet.md](ha-fuel-opinet.md) |
 | HA packages·secrets 구조 | [homeassistant/config-structure.md](../homeassistant/config-structure.md) |
 
 ## 폴더 구조
@@ -36,13 +39,13 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 lubelogger/
 ├── README.md
 ├── ha-rest-command.md       # HA 연동 상세 (자동화·OBD)
-├── ha-fuel-opinet.md        # 주유 연동 상세 (오피넷·스크립트)
+├── ha-fuel-opinet.md        # 주유 연동 (hass-opinet·스크립트)
 └── translations/
     └── Asia/
         └── ko_KR.json         # 한국어 번역
 ```
 
-HA packages: [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml), [opinet.yaml](../homeassistant/packages/opinet.yaml)
+HA packages: [lubelogger.yaml](../homeassistant/packages/lubelogger.yaml) · 오피넷: [hass-opinet](https://github.com/eigger/hass-opinet)
 
 `translations/` 레이아웃은 공식 번역 저장소 [hargata/lubelog_translations](https://github.com/hargata/lubelog_translations)와 동일합니다. PR 제출 시 `Asia/ko_KR.json`을 그대로 복사하면 됩니다.
 

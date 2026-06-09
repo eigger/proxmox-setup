@@ -59,7 +59,7 @@ data:
 
 ### 주유 기록
 
-[LubeLogger REST Command](ha-rest-command.md#2-packages--rest_command)와 오피넷 단가 조회는 [ha-fuel-opinet.md](ha-fuel-opinet.md)를 따릅니다. 오피넷 **API 키 발급**부터 진행하세요.
+[LubeLogger REST Command](ha-rest-command.md#2-packages--rest_command)와 [hass-opinet](https://github.com/eigger/hass-opinet) 주유 연동은 [ha-fuel-opinet.md](ha-fuel-opinet.md)를 따릅니다. 오피넷 **API 키 발급**부터 진행하세요.
 
 ```yaml
 service: rest_command.lubelogger_add_fuel

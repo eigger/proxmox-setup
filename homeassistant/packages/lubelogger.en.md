@@ -56,7 +56,7 @@ Omitting `is_full` defaults to `false`. For Opinet prices and amount-based scrip
 | Topic | Doc |
 |------|------|
 | REST command details·OBD automations | [lubelogger/ha-rest-command.en.md](../../lubelogger/ha-rest-command.en.md) |
-| Opinet price sensors | [opinet.yaml](opinet.yaml) · [ha-fuel-opinet.en.md](../../lubelogger/ha-fuel-opinet.en.md) |
+| Opinet · fuel | [hass-opinet](https://github.com/eigger/hass-opinet) · [ha-fuel-opinet.en.md](../../lubelogger/ha-fuel-opinet.en.md) |
 
 ## Apply
 
