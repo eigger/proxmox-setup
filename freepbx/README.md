@@ -31,6 +31,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 | 주제 | 문서 |
 |------|------|
 | Grandstream HT801/HT802 (SIP 내선) | [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md) |
+| Linksys PAP2/PAP2T (SIP 내선) | [linksys-pap2.md](linksys-pap2.md) |
 
 ## Home Assistant 연동
 
@@ -71,7 +72,7 @@ NAT 환경에서는 Proxmox·공유기 포트포워딩과 FreePBX `External Addr
 ```
 
 1. PJSIP Extension 생성
-2. Grandstream 등록 → [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md)
+2. Grandstream 또는 Linksys PAP2 등록 → [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md) / [linksys-pap2.md](linksys-pap2.md)
 3. (선택) AMI → [ha-asterisk.md](ha-asterisk.md)
 4. (선택) ha-sip → [ha-sip.md](ha-sip.md)
 
@@ -81,6 +82,7 @@ NAT 환경에서는 Proxmox·공유기 포트포워딩과 FreePBX `External Addr
 freepbx/
 ├── README.md
 ├── grandstream-ht801-ht802.md
+├── linksys-pap2.md          # Linksys PAP2/PAP2T 연동
 ├── ha-asterisk.md           # HA AMI 연동
 └── ha-sip.md                # HA ha-sip 애드온
 ```

@@ -31,6 +31,7 @@ Web UI after install: `http://<FREEPBX_IP>` (default port **80**)
 | Topic | Document |
 |------|------|
 | Grandstream HT801/HT802 (SIP extension) | [grandstream-ht801-ht802.en.md](grandstream-ht801-ht802.en.md) |
+| Linksys PAP2/PAP2T (SIP extension) | [linksys-pap2.en.md](linksys-pap2.en.md) |
 
 ## Home Assistant integration
 
@@ -71,7 +72,7 @@ In NAT environments, Proxmox and router port forwarding must match FreePBX `Exte
 ```
 
 1. Create a PJSIP Extension
-2. Register Grandstream → [grandstream-ht801-ht802.en.md](grandstream-ht801-ht802.en.md)
+2. Register Grandstream or Linksys PAP2 → [grandstream-ht801-ht802.en.md](grandstream-ht801-ht802.en.md) / [linksys-pap2.en.md](linksys-pap2.en.md)
 3. (Optional) AMI → [ha-asterisk.en.md](ha-asterisk.en.md)
 4. (Optional) ha-sip → [ha-sip.en.md](ha-sip.en.md)
 
@@ -83,6 +84,8 @@ freepbx/
 ├── README.en.md
 ├── grandstream-ht801-ht802.md
 ├── grandstream-ht801-ht802.en.md
+├── linksys-pap2.md          # Linksys PAP2/PAP2T integration
+├── linksys-pap2.en.md
 ├── ha-asterisk.md           # HA AMI integration
 ├── ha-asterisk.en.md
 ├── ha-sip.md                # HA ha-sip add-on
