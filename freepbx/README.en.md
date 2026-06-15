@@ -35,13 +35,14 @@ Web UI after install: `http://<FREEPBX_IP>` (default port **80**)
 
 ## Home Assistant integration
 
-AMI and ha-sip are **add-on, UI, and automation** based; there is no combined package in `homeassistant/packages/`.
+Since integrations are UI and service-based, there is no combined package in `homeassistant/packages/`.
 
-| Integration guide | Document |
-|-------------|------|
-| AMI (`asterisk.send_action`) | [ha-asterisk.en.md](ha-asterisk.en.md) |
-| ha-sip (SIP + Edge TTS) | [ha-sip.en.md](ha-sip.en.md) |
-| HA packages and secrets layout | [homeassistant/config-structure.en.md](../homeassistant/config-structure.en.md) |
+| Integration guide | Document | Notes |
+|-------------|------|------|
+| **SIP Client (hass-sip)** | [ha-hass-sip.en.md](ha-hass-sip.en.md) | **Main / Recommended** (HACS custom integration) |
+| AMI (`asterisk.send_action`) | [ha-asterisk.en.md](ha-asterisk.en.md) | Optional (for remote PBX control) |
+| ha-sip Add-on (SIP + Edge TTS) | [ha-sip.en.md](ha-sip.en.md) | Optional (add-on based) |
+| HA packages and secrets layout | [homeassistant/config-structure.en.md](../homeassistant/config-structure.en.md) | |
 
 ## Environment (placeholders)
 
@@ -67,14 +68,16 @@ In NAT environments, Proxmox and router port forwarding must match FreePBX `Exte
 ### Architecture summary
 
 ```
-[HA]  AMI :5038 ──────────────┐
-[HA]  ha-sip :5060 ───────────┼──► [FreePBX] ──SIP──► [Grandstream]
+[HA]  hass-sip :5060 ─────────┼──► [FreePBX] ──SIP──► [Grandstream]
+[HA]  AMI :5038 (Optional) ───┤
+[HA]  ha-sip :5060 (Optional) ┘
 ```
 
 1. Create a PJSIP Extension
 2. Register Grandstream or Linksys PAP2 → [grandstream-ht801-ht802.en.md](grandstream-ht801-ht802.en.md) / [linksys-pap2.en.md](linksys-pap2.en.md)
-3. (Optional) AMI → [ha-asterisk.en.md](ha-asterisk.en.md)
-4. (Optional) ha-sip → [ha-sip.en.md](ha-sip.en.md)
+3. **SIP Client Integration** → [ha-hass-sip.en.md](ha-hass-sip.en.md) (**Main**)
+4. (Optional) AMI → [ha-asterisk.en.md](ha-asterisk.en.md)
+5. (Optional) ha-sip add-on → [ha-sip.en.md](ha-sip.en.md)
 
 ## Folder layout
 
@@ -86,9 +89,11 @@ freepbx/
 ├── grandstream-ht801-ht802.en.md
 ├── linksys-pap2.md          # Linksys PAP2/PAP2T integration
 ├── linksys-pap2.en.md
-├── ha-asterisk.md           # HA AMI integration
+├── ha-hass-sip.md           # HA HACS SIP Client integration (Main)
+├── ha-hass-sip.en.md
+├── ha-asterisk.md           # HA AMI integration (Optional)
 ├── ha-asterisk.en.md
-├── ha-sip.md                # HA ha-sip add-on
+├── ha-sip.md                # HA ha-sip add-on (Optional)
 └── ha-sip.en.md
 ```
 

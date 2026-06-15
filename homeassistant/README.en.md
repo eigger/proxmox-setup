@@ -71,7 +71,7 @@ Each service **README** covers installation and ports only; HA integration uses 
 | Traccar | [traccar/README.en.md](../traccar/README.en.md) | traccar | [ha-rest-command.en.md](../traccar/ha-rest-command.en.md) |
 | grocy | [grocy/README.en.md](../grocy/README.en.md) | — | [ha-niimbot.en.md](../grocy/ha-niimbot.en.md) |
 | Cloudflared | [cloudflared/README.en.md](../cloudflared/README.en.md) | http | [tunnel-setup.en.md](../cloudflared/tunnel-setup.en.md) |
-| FreePBX | [freepbx/README.en.md](../freepbx/README.en.md) | — | [ha-sip.en.md](../freepbx/ha-sip.en.md), [ha-asterisk.en.md](../freepbx/ha-asterisk.en.md) |
+| FreePBX | [freepbx/README.en.md](../freepbx/README.en.md) | — | [ha-hass-sip.en.md](../freepbx/ha-hass-sip.en.md) (Main), [ha-sip.en.md](../freepbx/ha-sip.en.md), [ha-asterisk.en.md](../freepbx/ha-asterisk.en.md) |
 
 ## Folder structure
 

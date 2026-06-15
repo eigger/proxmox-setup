@@ -2,6 +2,10 @@
 
 **Language:** [한국어](ha-asterisk.md) · [English](ha-asterisk.en.md)
 
+> [!NOTE]
+> This configuration is now **optional (nice-to-have)** and no longer mandatory.
+> It is recommended to use [ha-hass-sip.en.md (SIP Client HACS Integration)](ha-hass-sip.en.md) as the primary integration method, which operates as a native media player entity.
+
 Grandstream analog extensions register **only with FreePBX (SIP)**; Home Assistant controls the PBX via **AMI (5038)**. The HA Asterisk **add-on is not required**.
 
 LXC install and ports: [README.en.md](README.en.md) · No combined package in `homeassistant/packages/` (add-on and automation details are in this document)

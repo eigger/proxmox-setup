@@ -2,6 +2,10 @@
 
 **Language:** [한국어](ha-sip.md) · [English](ha-sip.en.md)
 
+> [!NOTE]
+> This configuration is now **optional (nice-to-have)** and no longer mandatory.
+> It is recommended to use [ha-hass-sip.en.md (SIP Client HACS Integration)](ha-hass-sip.en.md) as the primary integration method, which operates as a native media player entity.
+
 The **ha-sip** add-on from [arnonym/ha-plugins](https://github.com/arnonym/ha-plugins) registers HA with FreePBX as a **SIP client**. TTS uses HA **Edge TTS** (`tts.edge_tts`).
 
 LXC install and ports: [README.en.md](README.en.md) · No combined package in `homeassistant/packages/` (add-on config is in [3. ha-sip add-on configuration](#3-ha-sip-add-on-configuration-yaml))

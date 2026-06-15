@@ -35,13 +35,14 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 
 ## Home Assistant 연동
 
-AMI·ha-sip는 **애드온·UI·자동화** 기반이라 `homeassistant/packages/` 조합본은 없습니다.
+통합 구성요소 및 자동화 기반이라 `homeassistant/packages/` 조합본은 없습니다.
 
-| 연동 가이드 | 문서 |
-|-------------|------|
-| AMI (`asterisk.send_action`) | [ha-asterisk.md](ha-asterisk.md) |
-| ha-sip (SIP + Edge TTS) | [ha-sip.md](ha-sip.md) |
-| HA packages·secrets 구조 | [homeassistant/config-structure.md](../homeassistant/config-structure.md) |
+| 연동 가이드 | 문서 | 비고 |
+|-------------|------|------|
+| **SIP Client (hass-sip)** | [ha-hass-sip.md](ha-hass-sip.md) | **메인 / 권장** (HACS 커스텀 통합) |
+| AMI (`asterisk.send_action`) | [ha-asterisk.md](ha-asterisk.md) | 선택 사항 (원격 제어용) |
+| ha-sip Addon (SIP + Edge TTS) | [ha-sip.md](ha-sip.md) | 선택 사항 (애드온 기반) |
+| HA packages·secrets 구조 | [homeassistant/config-structure.md](../homeassistant/config-structure.md) | |
 
 ## 환경 (플레이스홀더)
 
@@ -67,14 +68,16 @@ NAT 환경에서는 Proxmox·공유기 포트포워딩과 FreePBX `External Addr
 ### 구성 요약
 
 ```
-[HA]  AMI :5038 ──────────────┐
-[HA]  ha-sip :5060 ───────────┼──► [FreePBX] ──SIP──► [Grandstream]
+[HA]  hass-sip :5060 ─────────┼──► [FreePBX] ──SIP──► [Grandstream]
+[HA]  AMI :5038 (선택) ───────┤
+[HA]  ha-sip :5060 (선택) ────┘
 ```
 
 1. PJSIP Extension 생성
 2. Grandstream 또는 Linksys PAP2 등록 → [grandstream-ht801-ht802.md](grandstream-ht801-ht802.md) / [linksys-pap2.md](linksys-pap2.md)
-3. (선택) AMI → [ha-asterisk.md](ha-asterisk.md)
-4. (선택) ha-sip → [ha-sip.md](ha-sip.md)
+3. **SIP Client 연동** → [ha-hass-sip.md](ha-hass-sip.md) (**메인**)
+4. (선택) AMI → [ha-asterisk.md](ha-asterisk.md)
+5. (선택) ha-sip 애드온 → [ha-sip.md](ha-sip.md)
 
 ## 폴더 구조
 
@@ -83,8 +86,9 @@ freepbx/
 ├── README.md
 ├── grandstream-ht801-ht802.md
 ├── linksys-pap2.md          # Linksys PAP2/PAP2T 연동
-├── ha-asterisk.md           # HA AMI 연동
-└── ha-sip.md                # HA ha-sip 애드온
+├── ha-hass-sip.md           # HA HACS SIP Client 연동 (메인)
+├── ha-asterisk.md           # HA AMI 연동 (선택)
+└── ha-sip.md                # HA ha-sip 애드온 (선택)
 ```
 
 ## 비밀값

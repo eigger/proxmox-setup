@@ -71,7 +71,7 @@ HA 전용(LXC 폴더 없음): `tasmota`, `tmap`, `wol`, `recorder` — packages�
 | Traccar | [traccar/README.md](../traccar/README.md) | traccar | [ha-rest-command.md](../traccar/ha-rest-command.md) |
 | grocy | [grocy/README.md](../grocy/README.md) | — | [ha-niimbot.md](../grocy/ha-niimbot.md) |
 | Cloudflared | [cloudflared/README.md](../cloudflared/README.md) | http | [tunnel-setup.md](../cloudflared/tunnel-setup.md) |
-| FreePBX | [freepbx/README.md](../freepbx/README.md) | — | [ha-sip.md](../freepbx/ha-sip.md), [ha-asterisk.md](../freepbx/ha-asterisk.md) |
+| FreePBX | [freepbx/README.md](../freepbx/README.md) | — | [ha-hass-sip.md](../freepbx/ha-hass-sip.md) (메인), [ha-sip.md](../freepbx/ha-sip.md), [ha-asterisk.md](../freepbx/ha-asterisk.md) |
 
 ## 폴더 구조
 

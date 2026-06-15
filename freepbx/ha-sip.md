@@ -2,6 +2,10 @@
 
 **Language:** [한국어](ha-sip.md) · [English](ha-sip.en.md)
 
+> [!NOTE]
+> 이 설정은 이제 필수가 아닌 **선택 사항(Nice-to-have)**입니다. 
+> 대신 네이티브 미디어 플레이어 형태로 간편하게 연동할 수 있는 [ha-hass-sip.md (SIP Client HACS 통합)](ha-hass-sip.md) 방식을 메인으로 사용하는 것을 권장합니다.
+
 [arnonym/ha-plugins](https://github.com/arnonym/ha-plugins)의 **ha-sip** 애드온으로 HA가 FreePBX에 **SIP 클라이언트**로 등록합니다. TTS는 HA **Edge TTS**(`tts.edge_tts`)를 사용합니다.
 
 LXC 설치·포트: [README.md](README.md) · `homeassistant/packages/` 조합본 없음 (애드온 설정은 [3. ha-sip 애드온 구성](#3-ha-sip-애드온-구성-yaml))
