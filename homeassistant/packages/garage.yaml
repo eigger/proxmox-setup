@@ -1,0 +1,41 @@
+# HA /config/packages/garage.yaml
+# Garage Telemetry Integration — secrets: garage_telemetry_url, garage_auth_header, garage_status_url, garage_reminders_url
+# 문서: garage.md, ../../garage/README.md
+
+rest_command:
+  garage_send_telemetry:
+    url: !secret garage_telemetry_url
+    method: POST
+    headers:
+      Authorization: !secret garage_auth_header
+      Content-Type: "application/json"
+    payload: >-
+      {
+        "lat": {{ lat | default(0.0) }},
+        "lon": {{ lon | default(0.0) }},
+        "speed": {{ speed | default(0.0) }},
+        "rpm": {{ rpm | default(0.0) }},
+        "fuelLevel": {{ fuel_level | default(0.0) }},
+        "odometer": {{ odometer | default(0) }},
+        "dtcCodes": "{{ dtc_codes | default('') }}",
+        "inVehicle": {{ in_vehicle | default(false) | lower }}
+      }
+
+sensor:
+  - platform: rest
+    name: "Garage Odometer"
+    resource: !secret garage_status_url
+    value_template: "{{ value_json.odometer }}"
+    unit_of_measurement: "km"
+    scan_interval: 300
+  - platform: rest
+    name: "Garage Fuel Level"
+    resource: !secret garage_status_url
+    value_template: "{{ value_json.fuelLevel }}"
+    unit_of_measurement: "%"
+    scan_interval: 300
+  - platform: rest
+    name: "Garage Due Reminders"
+    resource: !secret garage_reminders_url
+    value_template: "{{ value_json | selectattr('isDue') | list | count }}"
+    scan_interval: 3600
