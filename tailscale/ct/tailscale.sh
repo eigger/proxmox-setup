@@ -32,7 +32,7 @@ ask() {
 }
 
 if ! command -v pveversion >/dev/null 2>&1; then
-  err "Proxmox VE 호스트에서 실행해야 합니다."
+  err "This must be run on a Proxmox VE host."
   exit 1
 fi
 
@@ -56,7 +56,7 @@ network_cidr() {
   echo "$(int_to_ip "$netint")/$prefix"
 }
 
-echo -e "${CYAN}== Tailscale 서브넷 라우터 LXC 설치 ==${NC}"
+echo -e "${CYAN}== Tailscale subnet router LXC install ==${NC}"
 
 ask CTID "CTID" "$(pvesh get /cluster/nextid)"
 # Named CT_HOSTNAME, not HOSTNAME: bash auto-populates $HOSTNAME with the
@@ -69,40 +69,40 @@ ask BRIDGE "Bridge" "vmbr0"
 
 mapfile -t ROOTDIR_STORAGES < <(pvesm status --content rootdir | awk 'NR>1{print $1}')
 if [ ${#ROOTDIR_STORAGES[@]} -eq 0 ]; then
-  err "컨테이너 rootfs를 저장할 storage가 없습니다."
+  err "No storage available for container rootfs."
   exit 1
 fi
 ask ROOTFS_STORAGE "Rootfs storage (options: ${ROOTDIR_STORAGES[*]})" "${ROOTDIR_STORAGES[0]}"
 
 mapfile -t TEMPLATE_STORAGES < <(pvesm status --content vztmpl | awk 'NR>1{print $1}')
 if [ ${#TEMPLATE_STORAGES[@]} -eq 0 ]; then
-  err "vztmpl를 저장할 storage가 없습니다."
+  err "No storage available for vztmpl."
   exit 1
 fi
 ask TEMPLATE_STORAGE "Template storage (options: ${TEMPLATE_STORAGES[*]})" "${TEMPLATE_STORAGES[0]}"
 
-ask IP_MODE "IPv4 설정 - dhcp 또는 static" "dhcp"
+ask IP_MODE "IPv4 mode - dhcp or static" "dhcp"
 if [ "$IP_MODE" = "static" ]; then
-  ask STATIC_IP "  Static IP/CIDR (예: 192.168.1.50/24)" ""
-  ask STATIC_GW "  Gateway (예: 192.168.1.1)" ""
+  ask STATIC_IP "  Static IP/CIDR (e.g. 192.168.1.50/24)" ""
+  ask STATIC_GW "  Gateway (e.g. 192.168.1.1)" ""
   NET_CONFIG="name=eth0,bridge=${BRIDGE},ip=${STATIC_IP},gw=${STATIC_GW},firewall=1"
 else
   NET_CONFIG="name=eth0,bridge=${BRIDGE},ip=dhcp,firewall=1"
 fi
 
-msg "Debian 13 템플릿 확인 중..."
+msg "Checking for the Debian 13 template..."
 pveam update >/dev/null 2>&1 || true
 TEMPLATE=$(pveam available --section system | awk '/debian-13-standard/{print $2}' | sort -V | tail -1)
 if [ -z "$TEMPLATE" ]; then
-  err "Debian 13 템플릿을 찾을 수 없습니다."
+  err "Could not find a Debian 13 template."
   exit 1
 fi
 if ! pveam list "$TEMPLATE_STORAGE" | grep -q "$TEMPLATE"; then
-  msg "템플릿 다운로드: $TEMPLATE"
+  msg "Downloading template: $TEMPLATE"
   pveam download "$TEMPLATE_STORAGE" "$TEMPLATE"
 fi
 
-msg "LXC $CTID ($CT_HOSTNAME) 생성 중..."
+msg "Creating LXC $CTID ($CT_HOSTNAME)..."
 pct create "$CTID" "$TEMPLATE_STORAGE:vztmpl/$TEMPLATE" \
   -hostname "$CT_HOSTNAME" \
   -cores "$CORES" \
@@ -122,10 +122,10 @@ lxc.cgroup2.devices.allow: c 10:200 rwm
 lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
 EOF
 
-msg "LXC 시작 중..."
+msg "Starting LXC..."
 pct start "$CTID"
 
-msg "네트워크 준비 대기 중..."
+msg "Waiting for networking..."
 for _ in $(seq 1 30); do
   if pct exec "$CTID" -- ip -4 addr show eth0 2>/dev/null | grep -q "inet "; then
     break
@@ -134,11 +134,11 @@ for _ in $(seq 1 30); do
 done
 CT_IP=$(pct exec "$CTID" -- bash -c "ip -4 -o addr show eth0 | awk '{print \$4}' | cut -d/ -f1" || true)
 
-msg "Tailscale 설치 중..."
+msg "Installing Tailscale..."
 pct exec "$CTID" -- bash -c "apt-get update -qq && apt-get install -y -qq curl ca-certificates >/dev/null"
 pct exec "$CTID" -- bash -c "curl -fsSL https://tailscale.com/install.sh | sh >/dev/null"
 
-msg "IP forwarding 활성화 중..."
+msg "Enabling IP forwarding..."
 pct exec "$CTID" -- bash -c "cat > /etc/sysctl.d/99-tailscale.conf <<'EOF'
 net.ipv4.ip_forward = 1
 net.ipv6.conf.all.forwarding = 1
@@ -157,26 +157,26 @@ if HOST_ADDR=$(ip -4 -o addr show dev "$BRIDGE" 2>/dev/null | awk '{print $4}' |
 fi
 
 if [ -n "$LAN_CIDR" ]; then
-  msg "감지된 LAN 대역: $LAN_CIDR (브리지 $BRIDGE 기준)"
+  msg "Detected LAN range: $LAN_CIDR (based on bridge $BRIDGE)"
 else
-  warn "브리지 $BRIDGE 에서 LAN 대역을 자동으로 감지하지 못했습니다."
+  warn "Could not auto-detect the LAN range from bridge $BRIDGE."
 fi
 ask ADVERTISE_CIDR "Advertise-routes CIDR" "$LAN_CIDR"
 if [ -z "$ADVERTISE_CIDR" ]; then
-  err "advertise-routes 대역이 지정되지 않았습니다. 컨테이너 생성 후 수동으로 'tailscale up --advertise-routes=<CIDR>'를 실행하세요."
+  err "No advertise-routes range given. After the container is created, run 'tailscale up --advertise-routes=<CIDR>' manually."
 fi
 
-ask TS_HOSTNAME "Tailscale 노드 이름" "$CT_HOSTNAME"
-ask AUTHKEY "Tailscale auth key (선택, 비워두면 나중에 수동 로그인)" ""
+ask TS_HOSTNAME "Tailscale node name" "$CT_HOSTNAME"
+ask AUTHKEY "Tailscale auth key (optional, leave blank to log in manually later)" ""
 
 if [ -n "$AUTHKEY" ] && [ -n "$ADVERTISE_CIDR" ]; then
-  msg "Tailscale 로그인 및 서브넷 라우터 설정 중..."
+  msg "Logging into Tailscale and setting up the subnet router..."
   pct exec "$CTID" -- tailscale up --authkey="$AUTHKEY" --advertise-routes="$ADVERTISE_CIDR" --hostname="$TS_HOSTNAME" --accept-dns=false
 else
-  warn "auth key가 없어 자동 로그인은 건너뜁니다."
+  warn "No auth key given, skipping automatic login."
 fi
 
-msg "Proxmox 콘솔 root 자동 로그인 설정 중..."
+msg "Setting up Proxmox console root auto-login..."
 # Proxmox's Console tab / `pct console` attaches to /dev/console, which
 # systemd serves via console-getty.service — not container-getty@N.service
 # (that one only covers the pts-based ttyN devices, which pct's console
@@ -189,10 +189,10 @@ EOF
 systemctl daemon-reload && systemctl restart console-getty.service"
 
 echo
-msg "설치 완료: CTID=$CTID, LXC IP=${CT_IP:-확인 필요}"
+msg "Install complete: CTID=$CTID, LXC IP=${CT_IP:-check manually}"
 if [ -z "$AUTHKEY" ]; then
-  echo -e "  아래 명령으로 로그인 및 서브넷 라우터 설정을 완료하세요:"
+  echo -e "  Run this to finish login and subnet router setup:"
   echo -e "  ${CYAN}pct exec $CTID -- tailscale up --advertise-routes=${ADVERTISE_CIDR:-<LAN_CIDR>} --hostname=${TS_HOSTNAME}${NC}"
 fi
-echo -e "  Tailscale 관리자 콘솔(https://login.tailscale.com/admin/machines)에서 이 머신의 advertised route를 ${YELLOW}승인(Approve)${NC}해야 실제로 사용 가능합니다."
-echo -e "  Proxmox 웹 UI의 LXC ${CTID} → Console에서 비밀번호 없이 root로 자동 로그인됩니다."
+echo -e "  You must ${YELLOW}approve${NC} this machine's advertised route in the Tailscale admin console (https://login.tailscale.com/admin/machines) before it actually works."
+echo -e "  The Proxmox web UI's LXC ${CTID} → Console now logs in as root automatically, no password."
