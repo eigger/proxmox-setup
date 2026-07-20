@@ -43,7 +43,7 @@ Tailscale은 서브넷 라우트를 광고(advertise)해도 **관리자 콘솔�
 - LXC는 unprivileged 컨테이너이며, Tailscale 동작에 필요한 `/dev/net/tun` 디바이스를 컨테이너 conf(`/etc/pve/lxc/<CTID>.conf`)에 직접 추가해 통과시킵니다.
 - 컨테이너 내부에 `net.ipv4.ip_forward` / `net.ipv6.conf.all.forwarding`을 활성화하여 Tailnet ↔ LAN 간 트래픽을 중계합니다.
 - 집 공유기(ISP 라우터)는 전혀 건드리지 않으며, LXC는 게이트웨이 교체가 아니라 **중계자** 역할만 합니다.
-- Proxmox 웹 UI의 **Console** 탭으로 접속하면 비밀번호 없이 root로 자동 로그인됩니다(`container-getty@1.service`에 `agetty --autologin root` 오버라이드 적용). Proxmox 호스트 접근 권한이 있는 사람은 누구나 컨테이너에 root로 들어갈 수 있다는 의미이니, Proxmox 자체 접근 통제에 의존합니다.
+- Proxmox 웹 UI의 **Console** 탭으로 접속하면 비밀번호 없이 root로 자동 로그인됩니다(`console-getty.service`에 `agetty --autologin root` 오버라이드 적용). Proxmox 호스트 접근 권한이 있는 사람은 누구나 컨테이너에 root로 들어갈 수 있다는 의미이니, Proxmox 자체 접근 통제에 의존합니다.
 
 ## 폴더 구조
 

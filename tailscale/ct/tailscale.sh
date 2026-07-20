@@ -177,14 +177,16 @@ else
 fi
 
 msg "Proxmox 콘솔 root 자동 로그인 설정 중..."
-# systemd inside an LXC serves pct's console via container-getty@.service
-# (not getty@.service, which only applies on bare metal/VMs).
-pct exec "$CTID" -- bash -c "mkdir -p /etc/systemd/system/container-getty@1.service.d && cat > /etc/systemd/system/container-getty@1.service.d/override.conf <<'EOF'
+# Proxmox's Console tab / `pct console` attaches to /dev/console, which
+# systemd serves via console-getty.service — not container-getty@N.service
+# (that one only covers the pts-based ttyN devices, which pct's console
+# feature doesn't use).
+pct exec "$CTID" -- bash -c "mkdir -p /etc/systemd/system/console-getty.service.d && cat > /etc/systemd/system/console-getty.service.d/override.conf <<'EOF'
 [Service]
 ExecStart=
-ExecStart=-/sbin/agetty --autologin root --noclear --keep-baud pts/%I 115200,38400,9600 \$TERM
+ExecStart=-/sbin/agetty --autologin root --noclear --keep-baud console 115200,38400,9600 \$TERM
 EOF
-systemctl daemon-reload && systemctl restart container-getty@1.service"
+systemctl daemon-reload && systemctl restart console-getty.service"
 
 echo
 msg "설치 완료: CTID=$CTID, LXC IP=${CT_IP:-확인 필요}"
