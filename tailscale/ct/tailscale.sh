@@ -170,6 +170,16 @@ else
   warn "auth key가 없어 자동 로그인은 건너뜁니다."
 fi
 
+msg "Proxmox 콘솔 root 자동 로그인 설정 중..."
+# systemd inside an LXC serves pct's console via container-getty@.service
+# (not getty@.service, which only applies on bare metal/VMs).
+pct exec "$CTID" -- bash -c "mkdir -p /etc/systemd/system/container-getty@1.service.d && cat > /etc/systemd/system/container-getty@1.service.d/override.conf <<'EOF'
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --noclear --keep-baud pts/%I 115200,38400,9600 \$TERM
+EOF
+systemctl daemon-reload && systemctl restart container-getty@1.service"
+
 echo
 msg "설치 완료: CTID=$CTID, LXC IP=${CT_IP:-확인 필요}"
 if [ -z "$AUTHKEY" ]; then
@@ -177,3 +187,4 @@ if [ -z "$AUTHKEY" ]; then
   echo -e "  ${CYAN}pct exec $CTID -- tailscale up --advertise-routes=${ADVERTISE_CIDR:-<LAN_CIDR>}${NC}"
 fi
 echo -e "  Tailscale 관리자 콘솔(https://login.tailscale.com/admin/machines)에서 이 머신의 advertised route를 ${YELLOW}승인(Approve)${NC}해야 실제로 사용 가능합니다."
+echo -e "  Proxmox 웹 UI의 LXC ${CTID} → Console에서 비밀번호 없이 root로 자동 로그인됩니다."

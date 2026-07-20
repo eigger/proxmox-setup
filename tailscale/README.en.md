@@ -41,6 +41,7 @@ Once approved and accepted, other tailnet devices can reach LAN private IPs dire
 - The LXC is an unprivileged container; the `/dev/net/tun` device Tailscale needs is passed through by appending entries directly to the container config (`/etc/pve/lxc/<CTID>.conf`).
 - `net.ipv4.ip_forward` / `net.ipv6.conf.all.forwarding` are enabled inside the container so it can relay traffic between the tailnet and the LAN.
 - Your home router (ISP router) is never touched — the LXC acts purely as a **relay**, not a gateway replacement.
+- The Proxmox web UI **Console** tab logs in as root automatically, no password (`agetty --autologin root` override on `container-getty@1.service`). Anyone with access to the Proxmox host can reach root inside this container, so it relies on Proxmox's own access control.
 
 ## Folder Structure
 
