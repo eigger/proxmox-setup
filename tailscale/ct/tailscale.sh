@@ -5,8 +5,13 @@
 #   bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/master/tailscale/ct/tailscale.sh)"
 #
 # Fully unattended one-liner (any var you set is skipped in the wizard):
-#   CTID=110 CT_HOSTNAME=tailscale IP_MODE=dhcp ADVERTISE_CIDR=192.168.1.0/24 \
-#   AUTHKEY=tskey-auth-xxxxx bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/master/tailscale/ct/tailscale.sh)"
+#   CTID=110 CT_HOSTNAME=tailscale TS_HOSTNAME=tailscale IP_MODE=dhcp \
+#   ADVERTISE_CIDR=192.168.1.0/24 AUTHKEY=tskey-auth-xxxxx \
+#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/master/tailscale/ct/tailscale.sh)"
+#
+# CT_HOSTNAME sets the LXC's own Linux hostname; TS_HOSTNAME sets the device
+# name it registers under in the Tailscale admin console (defaults to
+# CT_HOSTNAME, so most setups never need to set it separately).
 set -euo pipefail
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
@@ -161,11 +166,12 @@ if [ -z "$ADVERTISE_CIDR" ]; then
   err "advertise-routes 대역이 지정되지 않았습니다. 컨테이너 생성 후 수동으로 'tailscale up --advertise-routes=<CIDR>'를 실행하세요."
 fi
 
+ask TS_HOSTNAME "Tailscale 노드 이름" "$CT_HOSTNAME"
 ask AUTHKEY "Tailscale auth key (선택, 비워두면 나중에 수동 로그인)" ""
 
 if [ -n "$AUTHKEY" ] && [ -n "$ADVERTISE_CIDR" ]; then
   msg "Tailscale 로그인 및 서브넷 라우터 설정 중..."
-  pct exec "$CTID" -- tailscale up --authkey="$AUTHKEY" --advertise-routes="$ADVERTISE_CIDR" --accept-dns=false
+  pct exec "$CTID" -- tailscale up --authkey="$AUTHKEY" --advertise-routes="$ADVERTISE_CIDR" --hostname="$TS_HOSTNAME" --accept-dns=false
 else
   warn "auth key가 없어 자동 로그인은 건너뜁니다."
 fi
@@ -184,7 +190,7 @@ echo
 msg "설치 완료: CTID=$CTID, LXC IP=${CT_IP:-확인 필요}"
 if [ -z "$AUTHKEY" ]; then
   echo -e "  아래 명령으로 로그인 및 서브넷 라우터 설정을 완료하세요:"
-  echo -e "  ${CYAN}pct exec $CTID -- tailscale up --advertise-routes=${ADVERTISE_CIDR:-<LAN_CIDR>}${NC}"
+  echo -e "  ${CYAN}pct exec $CTID -- tailscale up --advertise-routes=${ADVERTISE_CIDR:-<LAN_CIDR>} --hostname=${TS_HOSTNAME}${NC}"
 fi
 echo -e "  Tailscale 관리자 콘솔(https://login.tailscale.com/admin/machines)에서 이 머신의 advertised route를 ${YELLOW}승인(Approve)${NC}해야 실제로 사용 가능합니다."
 echo -e "  Proxmox 웹 UI의 LXC ${CTID} → Console에서 비밀번호 없이 root로 자동 로그인됩니다."

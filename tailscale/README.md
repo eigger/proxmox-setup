@@ -24,7 +24,9 @@ CTID=110 CT_HOSTNAME=tailscale IP_MODE=dhcp ADVERTISE_CIDR=192.168.1.0/24 \
 AUTHKEY=tskey-auth-xxxxx bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/master/tailscale/ct/tailscale.sh)"
 ```
 
-지원하는 변수: `CTID`, `CT_HOSTNAME`, `CORES`, `MEMORY`, `DISK_SIZE`, `BRIDGE`, `ROOTFS_STORAGE`, `TEMPLATE_STORAGE`, `IP_MODE`(`dhcp`/`static`), `STATIC_IP`, `STATIC_GW`, `ADVERTISE_CIDR`, `AUTHKEY`.
+지원하는 변수: `CTID`, `CT_HOSTNAME`, `TS_HOSTNAME`, `CORES`, `MEMORY`, `DISK_SIZE`, `BRIDGE`, `ROOTFS_STORAGE`, `TEMPLATE_STORAGE`, `IP_MODE`(`dhcp`/`static`), `STATIC_IP`, `STATIC_GW`, `ADVERTISE_CIDR`, `AUTHKEY`.
+
+`CT_HOSTNAME`은 LXC 자체의 리눅스 호스트네임, `TS_HOSTNAME`은 Tailscale 관리자 콘솔에 등록되는 노드 이름입니다. 기본값은 `CT_HOSTNAME`과 동일하며, 둘을 다르게 하고 싶을 때만 `TS_HOSTNAME`을 따로 지정하면 됩니다.
 
 ### 설치 후 필수: 라우트 승인
 

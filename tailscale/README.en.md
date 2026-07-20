@@ -24,7 +24,9 @@ CTID=110 CT_HOSTNAME=tailscale IP_MODE=dhcp ADVERTISE_CIDR=192.168.1.0/24 \
 AUTHKEY=tskey-auth-xxxxx bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/master/tailscale/ct/tailscale.sh)"
 ```
 
-Supported vars: `CTID`, `CT_HOSTNAME`, `CORES`, `MEMORY`, `DISK_SIZE`, `BRIDGE`, `ROOTFS_STORAGE`, `TEMPLATE_STORAGE`, `IP_MODE` (`dhcp`/`static`), `STATIC_IP`, `STATIC_GW`, `ADVERTISE_CIDR`, `AUTHKEY`.
+Supported vars: `CTID`, `CT_HOSTNAME`, `TS_HOSTNAME`, `CORES`, `MEMORY`, `DISK_SIZE`, `BRIDGE`, `ROOTFS_STORAGE`, `TEMPLATE_STORAGE`, `IP_MODE` (`dhcp`/`static`), `STATIC_IP`, `STATIC_GW`, `ADVERTISE_CIDR`, `AUTHKEY`.
+
+`CT_HOSTNAME` sets the LXC's own Linux hostname; `TS_HOSTNAME` sets the device name registered in the Tailscale admin console. It defaults to `CT_HOSTNAME`, so only set it separately if you want the two to differ.
 
 ### Required after install: approve the route
 
