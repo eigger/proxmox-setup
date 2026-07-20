@@ -13,6 +13,7 @@ Per-VM/LXC **install and operations** configuration for Proxmox, organized by se
 | Stash | [stash/](stash/) | Home inventory and barcode manager (barcode/Matter scan, label print, HA integration) |
 | Cloudflared | [cloudflared/](cloudflared/) | Cloudflare Tunnel (LXC, [tunnel setup](cloudflared/tunnel-setup.en.md)) |
 | Cloudflare DDNS | [cloudflare-ddns/](cloudflare-ddns/) | Dynamic DNS updates (LXC) |
+| Tailscale | [tailscale/](tailscale/) | Subnet router LXC (mesh VPN access to the home LAN) |
 | LubeLogger (unused) | [lubelogger/](lubelogger/) | Vehicle maintenance and fuel tracker (Korean translation, HA integration) |
 | Traccar (unused) | [traccar/](traccar/) | GPS tracking server (HA REST Command) |
 | grocy (unused) | [grocy/](grocy/) | Household and grocery inventory (Niimbot label integration) |

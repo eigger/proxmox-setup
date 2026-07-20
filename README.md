@@ -13,6 +13,7 @@ Proxmox 위 VM/LXC별 **설치·운영 설정**을 서버(역할)마다 디렉�
 | Stash | [stash/](stash/) | 가정용 재고·바코드 관리 (바코드/Matter 스캔, 라벨 인쇄, HA 연동) |
 | Cloudflared | [cloudflared/](cloudflared/) | Cloudflare Tunnel (LXC, [터널 구성](cloudflared/tunnel-setup.md)) |
 | Cloudflare DDNS | [cloudflare-ddns/](cloudflare-ddns/) | 동적 DNS 갱신 (LXC) |
+| Tailscale | [tailscale/](tailscale/) | 서브넷 라우터 LXC (메시 VPN으로 집 LAN 접근) |
 | LubeLogger (미사용) | [lubelogger/](lubelogger/) | 차량 정비·연비 트래커 (한국어 번역, HA 연동) |
 | Traccar (미사용) | [traccar/](traccar/) | GPS 추적 서버 (HA REST Command) |
 | grocy (미사용) | [grocy/](grocy/) | 식료품·가사 재고 관리 (Niimbot 라벨 연동) |
