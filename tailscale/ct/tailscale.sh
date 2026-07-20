@@ -90,11 +90,11 @@ else
   NET_CONFIG="name=eth0,bridge=${BRIDGE},ip=dhcp,firewall=1"
 fi
 
-msg "Debian 12 템플릿 확인 중..."
+msg "Debian 13 템플릿 확인 중..."
 pveam update >/dev/null 2>&1 || true
-TEMPLATE=$(pveam available --section system | awk '/debian-12-standard/{print $2}' | sort -V | tail -1)
+TEMPLATE=$(pveam available --section system | awk '/debian-13-standard/{print $2}' | sort -V | tail -1)
 if [ -z "$TEMPLATE" ]; then
-  err "Debian 12 템플릿을 찾을 수 없습니다."
+  err "Debian 13 템플릿을 찾을 수 없습니다."
   exit 1
 fi
 if ! pveam list "$TEMPLATE_STORAGE" | grep -q "$TEMPLATE"; then
