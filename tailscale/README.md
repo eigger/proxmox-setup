@@ -20,11 +20,11 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/mas
 값을 환경변수로 미리 주면 해당 질문은 건너뛰고, 전부 지정하면 완전 무인(한 줄) 설치가 됩니다:
 
 ```bash
-CTID=110 HOSTNAME=tailscale IP_MODE=dhcp ADVERTISE_CIDR=192.168.1.0/24 \
+CTID=110 CT_HOSTNAME=tailscale IP_MODE=dhcp ADVERTISE_CIDR=192.168.1.0/24 \
 AUTHKEY=tskey-auth-xxxxx bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/master/tailscale/ct/tailscale.sh)"
 ```
 
-지원하는 변수: `CTID`, `HOSTNAME`, `CORES`, `MEMORY`, `DISK_SIZE`, `BRIDGE`, `ROOTFS_STORAGE`, `TEMPLATE_STORAGE`, `IP_MODE`(`dhcp`/`static`), `STATIC_IP`, `STATIC_GW`, `ADVERTISE_CIDR`, `AUTHKEY`.
+지원하는 변수: `CTID`, `CT_HOSTNAME`, `CORES`, `MEMORY`, `DISK_SIZE`, `BRIDGE`, `ROOTFS_STORAGE`, `TEMPLATE_STORAGE`, `IP_MODE`(`dhcp`/`static`), `STATIC_IP`, `STATIC_GW`, `ADVERTISE_CIDR`, `AUTHKEY`.
 
 ### 설치 후 필수: 라우트 승인
 

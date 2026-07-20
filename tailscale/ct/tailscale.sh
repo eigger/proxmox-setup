@@ -5,7 +5,7 @@
 #   bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/master/tailscale/ct/tailscale.sh)"
 #
 # Fully unattended one-liner (any var you set is skipped in the wizard):
-#   CTID=110 HOSTNAME=tailscale IP_MODE=dhcp ADVERTISE_CIDR=192.168.1.0/24 \
+#   CTID=110 CT_HOSTNAME=tailscale IP_MODE=dhcp ADVERTISE_CIDR=192.168.1.0/24 \
 #   AUTHKEY=tskey-auth-xxxxx bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/master/tailscale/ct/tailscale.sh)"
 set -euo pipefail
 
@@ -54,7 +54,9 @@ network_cidr() {
 echo -e "${CYAN}== Tailscale 서브넷 라우터 LXC 설치 ==${NC}"
 
 ask CTID "CTID" "$(pvesh get /cluster/nextid)"
-ask HOSTNAME "Hostname" "tailscale"
+# Named CT_HOSTNAME, not HOSTNAME: bash auto-populates $HOSTNAME with the
+# Proxmox host's own hostname, which would make `ask` skip this prompt.
+ask CT_HOSTNAME "Hostname" "tailscale"
 ask CORES "Cores" "1"
 ask MEMORY "Memory MB" "512"
 ask DISK_SIZE "Disk size GB" "2"
@@ -95,9 +97,9 @@ if ! pveam list "$TEMPLATE_STORAGE" | grep -q "$TEMPLATE"; then
   pveam download "$TEMPLATE_STORAGE" "$TEMPLATE"
 fi
 
-msg "LXC $CTID ($HOSTNAME) 생성 중..."
+msg "LXC $CTID ($CT_HOSTNAME) 생성 중..."
 pct create "$CTID" "$TEMPLATE_STORAGE:vztmpl/$TEMPLATE" \
-  -hostname "$HOSTNAME" \
+  -hostname "$CT_HOSTNAME" \
   -cores "$CORES" \
   -memory "$MEMORY" \
   -swap 512 \

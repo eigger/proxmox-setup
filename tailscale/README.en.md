@@ -20,11 +20,11 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/mas
 Pre-set any value as an env var to skip that prompt; set all of them and the install runs fully unattended as one line:
 
 ```bash
-CTID=110 HOSTNAME=tailscale IP_MODE=dhcp ADVERTISE_CIDR=192.168.1.0/24 \
+CTID=110 CT_HOSTNAME=tailscale IP_MODE=dhcp ADVERTISE_CIDR=192.168.1.0/24 \
 AUTHKEY=tskey-auth-xxxxx bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigger/proxmox-setup/master/tailscale/ct/tailscale.sh)"
 ```
 
-Supported vars: `CTID`, `HOSTNAME`, `CORES`, `MEMORY`, `DISK_SIZE`, `BRIDGE`, `ROOTFS_STORAGE`, `TEMPLATE_STORAGE`, `IP_MODE` (`dhcp`/`static`), `STATIC_IP`, `STATIC_GW`, `ADVERTISE_CIDR`, `AUTHKEY`.
+Supported vars: `CTID`, `CT_HOSTNAME`, `CORES`, `MEMORY`, `DISK_SIZE`, `BRIDGE`, `ROOTFS_STORAGE`, `TEMPLATE_STORAGE`, `IP_MODE` (`dhcp`/`static`), `STATIC_IP`, `STATIC_GW`, `ADVERTISE_CIDR`, `AUTHKEY`.
 
 ### Required after install: approve the route
 
