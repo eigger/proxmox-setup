@@ -11,6 +11,7 @@ Per-VM/LXC **install and operations** configuration for Proxmox, organized by se
 | FreePBX | [freepbx/](freepbx/) | IP-PBX (Asterisk + FreePBX web UI) |
 | Garage | [garage/](garage/) | Vehicle maintenance and fuel tracker (Torque Pro OBD, HA integration) |
 | Stash | [stash/](stash/) | Home inventory and barcode manager (barcode/Matter scan, label print, HA integration) |
+| Drop | [drop/](drop/) | Mobile-PC file sharing web app (PWA Web Share Target, chunked upload, folders/trash) |
 | Cloudflared | [cloudflared/](cloudflared/) | Cloudflare Tunnel (LXC, [tunnel setup](cloudflared/tunnel-setup.en.md)) |
 | Cloudflare DDNS | [cloudflare-ddns/](cloudflare-ddns/) | Dynamic DNS updates (LXC) |
 | Tailscale | [tailscale/](tailscale/) | Subnet router LXC (mesh VPN access to the home LAN) |

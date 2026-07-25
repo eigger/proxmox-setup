@@ -11,6 +11,7 @@ Proxmox 위 VM/LXC별 **설치·운영 설정**을 서버(역할)마다 디렉�
 | FreePBX | [freepbx/](freepbx/) | IP-PBX (Asterisk + FreePBX 웹 UI) |
 | Garage | [garage/](garage/) | 차량 정비·주유 트래커 (Torque Pro OBD, HA 연동) |
 | Stash | [stash/](stash/) | 가정용 재고·바코드 관리 (바코드/Matter 스캔, 라벨 인쇄, HA 연동) |
+| Drop | [drop/](drop/) | 모바일-PC 파일 공유 웹 앱 (PWA Web Share Target, 청크 업로드, 폴더/휴지통) |
 | Cloudflared | [cloudflared/](cloudflared/) | Cloudflare Tunnel (LXC, [터널 구성](cloudflared/tunnel-setup.md)) |
 | Cloudflare DDNS | [cloudflare-ddns/](cloudflare-ddns/) | 동적 DNS 갱신 (LXC) |
 | Tailscale | [tailscale/](tailscale/) | 서브넷 라우터 LXC (메시 VPN으로 집 LAN 접근) |
