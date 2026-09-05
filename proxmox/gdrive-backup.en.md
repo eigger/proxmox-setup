@@ -79,20 +79,20 @@ This script does not run `vzdump` — it assumes the existing Proxmox backup job
 
 ## 3. Crontab — daily run
 
-The existing Proxmox backup job finishes at **03:00**, so run the upload at **03:30** to leave a safety margin:
+The existing Proxmox backup job finishes at **03:00**, so run the upload at **04:00** to leave a safety margin:
 
 ```bash
-(crontab -l 2>/dev/null; echo "30 3 * * * /root/gdrive_backup.sh") | crontab -
+(crontab -l 2>/dev/null; echo "0 4 * * * /root/gdrive_backup.sh") | crontab -
 ```
 
 If a `30 4 * * *` (04:30) entry is already registered, remove it first, then re-register with the command above:
 
 ```bash
 crontab -l | grep -v "/root/gdrive_backup.sh" | crontab -
-(crontab -l 2>/dev/null; echo "30 3 * * * /root/gdrive_backup.sh") | crontab -
+(crontab -l 2>/dev/null; echo "0 4 * * * /root/gdrive_backup.sh") | crontab -
 ```
 
-If the Proxmox backup job finishes later than 03:00, push the time back further. Change time: `30 3` → `minute hour` (cron format). Verify: `crontab -l`
+If the Proxmox backup job finishes later, push the time back further. Change time: `0 4` → `minute hour` (cron format). Verify: `crontab -l`
 
 ## 4. Maintenance
 

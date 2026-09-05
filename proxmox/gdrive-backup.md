@@ -79,20 +79,20 @@ chmod +x /root/gdrive_backup.sh
 
 ## 3. Crontab — 매일 자동 실행
 
-기존 Proxmox 백업 작업이 **03:00**에 완료되므로, 여유를 두고 **03:30**에 업로드를 실행합니다:
+기존 Proxmox 백업 작업이 **03:00**에 완료되므로, 여유를 두고 **04:00**에 업로드를 실행합니다:
 
 ```bash
-(crontab -l 2>/dev/null; echo "30 3 * * * /root/gdrive_backup.sh") | crontab -
+(crontab -l 2>/dev/null; echo "0 4 * * * /root/gdrive_backup.sh") | crontab -
 ```
 
 기존에 `30 4 * * *`(04:30) 항목이 이미 등록되어 있다면 먼저 제거한 뒤 위 명령으로 다시 등록하세요:
 
 ```bash
 crontab -l | grep -v "/root/gdrive_backup.sh" | crontab -
-(crontab -l 2>/dev/null; echo "30 3 * * * /root/gdrive_backup.sh") | crontab -
+(crontab -l 2>/dev/null; echo "0 4 * * * /root/gdrive_backup.sh") | crontab -
 ```
 
-Proxmox 백업 작업이 03:00보다 늦게 끝나는 경우 시간을 더 뒤로 조정하세요. 시간 변경: `30 3` → `분 시` (cron 형식). 확인: `crontab -l`
+Proxmox 백업 작업이 더 늦게 끝나는 경우 시간을 더 뒤로 조정하세요. 시간 변경: `0 4` → `분 시` (cron 형식). 확인: `crontab -l`
 
 ## 4. 유지보수
 
