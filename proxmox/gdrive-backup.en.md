@@ -6,8 +6,7 @@ LXC/VM dump backup via [rclone](https://rclone.org/), with **upload speed and co
 
 Host overview: [README.en.md](README.en.md)
 
-1. **Step 1:** Local LXC/VM dumps with `vzdump` (`/var/lib/vz/dump`)
-2. **Step 2:** Sync to Google Drive with `rclone sync`
+The local dump (`vzdump`, `/var/lib/vz/dump`) is produced separately by Proxmox's own daily backup job (Datacenter → Backup); this script only syncs the already-finished result to Google Drive.
 
 ## 1. Install Rclone and link Google Drive
 
@@ -55,20 +54,15 @@ DEST_DIR="gdrive:Backup/Proxmox"
 LOG_FILE="/var/log/rclone_backup.log"
 
 echo "========================================" >> $LOG_FILE
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] 1단계: Proxmox LXC/VM 로컬 백업 시작" >> $LOG_FILE
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] Starting safe Google Drive sync" >> $LOG_FILE
 
-# 모든 LXC/VM을 무중단 압축 백업
-vzdump --all --mode snapshot --compress zstd >> $LOG_FILE 2>&1
-
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] 2단계: 구글 드라이브 안전 동기화 시작" >> $LOG_FILE
-
-# 안전장치: 속도 10MB/s, 동시 전송 2개
+# Safety limits: 10MB/s, 2 concurrent transfers
 rclone sync "$SOURCE_DIR" "$DEST_DIR" --bwlimit 10M --transfers 2 -v >> $LOG_FILE 2>&1
 
 if [ $? -eq 0 ]; then
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [성공] 백업 및 안전 동기화 완료" >> $LOG_FILE
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [SUCCESS] Sync completed" >> $LOG_FILE
 else
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [실패] 작업 중 오류 발생" >> $LOG_FILE
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [FAILED] Error during sync" >> $LOG_FILE
 fi
 echo "========================================" >> $LOG_FILE
 EOF
@@ -81,17 +75,24 @@ chmod +x /root/gdrive_backup.sh
 | `--transfers 2` | 2 | Concurrent upload file count |
 | `rclone sync` | — | Match destination to source (dumps not present locally may be deleted on the drive) |
 
-To back up specific VMs/LXCs only, change the script to use VMIDs instead of `vzdump --all`. Change the Google Drive path in `DEST_DIR`.
+This script does not run `vzdump` — it assumes the existing Proxmox backup job has already produced dumps in `SOURCE_DIR` and only uploads them. Change the Google Drive path in `DEST_DIR`.
 
 ## 3. Crontab — daily run
 
-Run daily at **04:30**:
+The existing Proxmox backup job finishes at **03:00**, so run the upload at **03:30** to leave a safety margin:
 
 ```bash
-(crontab -l 2>/dev/null; echo "30 4 * * * /root/gdrive_backup.sh") | crontab -
+(crontab -l 2>/dev/null; echo "30 3 * * * /root/gdrive_backup.sh") | crontab -
 ```
 
-Change time: `30 4` → `minute hour` (cron format). Verify: `crontab -l`
+If a `30 4 * * *` (04:30) entry is already registered, remove it first, then re-register with the command above:
+
+```bash
+crontab -l | grep -v "/root/gdrive_backup.sh" | crontab -
+(crontab -l 2>/dev/null; echo "30 3 * * * /root/gdrive_backup.sh") | crontab -
+```
+
+If the Proxmox backup job finishes later than 03:00, push the time back further. Change time: `30 3` → `minute hour` (cron format). Verify: `crontab -l`
 
 ## 4. Maintenance
 
@@ -139,6 +140,6 @@ rclone config delete gdrive
 
 ## Notes
 
-- The first `vzdump --all` can take a long time depending on VM/LXC count and disk size.
+- This script doesn't create the local dump, so if the Proxmox backup job's schedule or duration changes, adjust the crontab time accordingly.
 - `rclone sync` may delete remote files not present in the local `dump`; be careful if you manually placed files on the drive at the same path.
 - Keep the `gdrive` remote name and `Backup/Proxmox` path consistent for your environment.

@@ -6,8 +6,7 @@
 
 호스트 개요: [README.md](README.md)
 
-1. **1단계:** `vzdump`로 LXC/VM 로컬 덤프 (`/var/lib/vz/dump`)
-2. **2단계:** `rclone sync`로 Google Drive에 동기화
+로컬 덤프(`vzdump`, `/var/lib/vz/dump`)는 Proxmox 자체 백업 작업(데이터센터 → 백업)에서 별도로 매일 실행되며, 이미 완료된 결과물을 이 스크립트가 Google Drive로 동기화만 합니다.
 
 ## 1. Rclone 설치 및 Google Drive 연동
 
@@ -55,18 +54,13 @@ DEST_DIR="gdrive:Backup/Proxmox"
 LOG_FILE="/var/log/rclone_backup.log"
 
 echo "========================================" >> $LOG_FILE
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] 1단계: Proxmox LXC/VM 로컬 백업 시작" >> $LOG_FILE
-
-# 모든 LXC/VM을 무중단 압축 백업
-vzdump --all --mode snapshot --compress zstd >> $LOG_FILE 2>&1
-
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] 2단계: 구글 드라이브 안전 동기화 시작" >> $LOG_FILE
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] 구글 드라이브 안전 동기화 시작" >> $LOG_FILE
 
 # 안전장치: 속도 10MB/s, 동시 전송 2개
 rclone sync "$SOURCE_DIR" "$DEST_DIR" --bwlimit 10M --transfers 2 -v >> $LOG_FILE 2>&1
 
 if [ $? -eq 0 ]; then
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [성공] 백업 및 안전 동기화 완료" >> $LOG_FILE
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [성공] 안전 동기화 완료" >> $LOG_FILE
 else
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] [실패] 작업 중 오류 발생" >> $LOG_FILE
 fi
@@ -81,17 +75,24 @@ chmod +x /root/gdrive_backup.sh
 | `--transfers 2` | 2 | 동시 업로드 파일 수 |
 | `rclone sync` | — | 대상을 소스와 동일하게 맞춤 (드라이브에서 로컬에 없는 덤프는 삭제될 수 있음) |
 
-특정 VM/LXC만 백업하려면 `vzdump --all` 대신 VMID를 지정하도록 스크립트를 수정합니다. Google Drive 경로는 `DEST_DIR`에서 변경합니다.
+이 스크립트는 `vzdump`를 실행하지 않습니다 — 기존 Proxmox 백업 작업이 이미 `SOURCE_DIR`에 덤프를 만들어 두었다고 가정하고 그 결과만 업로드합니다. Google Drive 경로는 `DEST_DIR`에서 변경합니다.
 
 ## 3. Crontab — 매일 자동 실행
 
-매일 **04:30** 실행:
+기존 Proxmox 백업 작업이 **03:00**에 완료되므로, 여유를 두고 **03:30**에 업로드를 실행합니다:
 
 ```bash
-(crontab -l 2>/dev/null; echo "30 4 * * * /root/gdrive_backup.sh") | crontab -
+(crontab -l 2>/dev/null; echo "30 3 * * * /root/gdrive_backup.sh") | crontab -
 ```
 
-시간 변경: `30 4` → `분 시` (cron 형식). 확인: `crontab -l`
+기존에 `30 4 * * *`(04:30) 항목이 이미 등록되어 있다면 먼저 제거한 뒤 위 명령으로 다시 등록하세요:
+
+```bash
+crontab -l | grep -v "/root/gdrive_backup.sh" | crontab -
+(crontab -l 2>/dev/null; echo "30 3 * * * /root/gdrive_backup.sh") | crontab -
+```
+
+Proxmox 백업 작업이 03:00보다 늦게 끝나는 경우 시간을 더 뒤로 조정하세요. 시간 변경: `30 3` → `분 시` (cron 형식). 확인: `crontab -l`
 
 ## 4. 유지보수
 
@@ -139,6 +140,6 @@ rclone config delete gdrive
 
 ## 참고
 
-- 첫 `vzdump --all`은 VM/LXC 수·디스크 크기에 따라 오래 걸릴 수 있습니다.
+- 이 스크립트는 로컬 덤프를 만들지 않으므로, Proxmox 백업 작업의 실행 시각·소요 시간이 바뀌면 crontab 시간도 함께 조정해야 합니다.
 - `rclone sync`는 로컬 `dump`에 없는 원격 파일을 삭제할 수 있으므로, 드라이브에 수동으로 넣은 파일이 같은 경로에 있으면 주의합니다.
 - `gdrive` remote 이름·`Backup/Proxmox` 경로는 환경에 맞게 통일해 두세요.
